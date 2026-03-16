@@ -1,0 +1,8 @@
+node_modules/
+db/forum.db
+db/forum.db-shm
+db/forum.db-wal
+db/sessions.db
+.env
+outdated.json
+package-lock.json

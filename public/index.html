@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLOV//CHAN</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --void:#040609;--bg:#080c12;--bg2:#0d1218;--bg3:#121820;
+  --cyan:#00f5ff;--cyan-dim:#007a80;--cyan-dark:#003840;
+  --pink:#ff006e;--pink-dim:#80003a;
+  --yellow:#ffd60a;
+  --text:#c4dce8;--text-dim:#4a6478;
+  --border:#0f2030;--border-bright:#1a3348;
+  --glow-cyan:0 0 10px rgba(0,245,255,.5),0 0 30px rgba(0,245,255,.2);
+  --glow-pink:0 0 10px rgba(255,0,110,.5),0 0 30px rgba(255,0,110,.2);
+  --radius:4px;
+  --transition:.15s ease;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;}
+::selection{background:rgba(0,245,255,.25);color:#fff;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,245,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;
+}
+
+/* ── STATUSBAR ── */
+#statusbar{background:var(--void);border-bottom:1px solid var(--cyan-dark);padding:3px 28px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan-dim);display:flex;gap:24px;flex-wrap:wrap;position:relative;z-index:2;}
+
+/* ── HEADER ── */
+header{background:rgba(8,12,18,.97);border-bottom:1px solid var(--cyan-dark);position:sticky;top:0;z-index:200;box-shadow:0 0 40px rgba(0,245,255,.08);backdrop-filter:blur(10px);}
+.header-inner{max-width:1200px;margin:0 auto;padding:0 28px;height:56px;display:flex;align-items:center;gap:16px;}
+.logo{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--cyan);text-shadow:var(--glow-cyan);cursor:pointer;letter-spacing:3px;flex-shrink:0;transition:letter-spacing .2s;}
+.logo:hover{letter-spacing:5px;}
+.logo em{color:var(--pink);font-style:normal;text-shadow:var(--glow-pink);}
+.hnav-bar{display:flex;gap:2px;flex:1;}
+.hnav{padding:5px 12px;font-size:11px;font-weight:500;color:var(--text-dim);cursor:pointer;border:1px solid transparent;border-radius:3px;transition:all .15s;text-transform:uppercase;letter-spacing:.5px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.hnav:hover{color:var(--cyan);border-color:var(--cyan-dark);background:rgba(0,245,255,.05);}
+.hnav.adm{color:var(--pink);}
+.hnav.adm:hover{color:var(--pink);border-color:var(--pink-dim);background:rgba(255,0,110,.05);}
+.header-right{display:flex;align-items:center;gap:12px;margin-left:auto;flex-shrink:0;}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border-bright);padding:4px 12px;border-radius:3px;font-size:11px;font-family:'JetBrains Mono',monospace;}
+.user-chip .uname{color:var(--yellow);}
+.rbadge{font-size:9px;padding:1px 5px;text-transform:uppercase;letter-spacing:.5px;}
+.rbadge.admin{color:var(--pink);background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.3);}
+.rbadge.moderator{color:var(--yellow);background:rgba(255,214,10,.1);border:1px solid rgba(255,214,10,.3);}
+.rbadge.member{color:var(--text-dim);background:var(--border);border:1px solid var(--border-bright);}
+.rbadge.banned{color:#ff4444;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);}
+#clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan-dim);min-width:65px;text-align:right;}
+
+/* ── LAYOUT ── */
+.layout{max-width:1200px;margin:0 auto;padding:22px 28px;display:grid;grid-template-columns:200px 1fr;gap:18px;position:relative;z-index:1;align-items:start;}
+
+/* ── SIDEBAR ── */
+#sidebar{display:flex;flex-direction:column;gap:10px;position:sticky;top:76px;}
+.sbox{background:var(--bg2);border:1px solid var(--border);border-top:2px solid var(--cyan-dark);}
+.sbox-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:var(--cyan-dim);padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg3);letter-spacing:2px;}
+.cat-item{padding:7px 12px;font-size:11px;cursor:pointer;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;gap:6px;border-left:2px solid transparent;transition:all .12s;font-family:'JetBrains Mono',monospace;}
+.cat-item:hover{color:var(--cyan);background:rgba(0,245,255,.04);border-left-color:var(--cyan);}
+.cat-item.active{color:var(--cyan);background:rgba(0,245,255,.07);border-left-color:var(--cyan);}
+.cat-cnt{background:var(--border-bright);color:var(--text-dim);font-size:10px;padding:1px 5px;flex-shrink:0;}
+.cat-item.active .cat-cnt{background:var(--cyan-dark);color:var(--cyan);}
+.slink{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:10px;color:var(--text-dim);cursor:pointer;border-left:2px solid transparent;transition:all .12s;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.5px;}
+.slink:hover{color:var(--cyan);background:rgba(0,245,255,.04);border-left-color:var(--cyan);}
+.slink.pink:hover{color:var(--pink);border-left-color:var(--pink);background:rgba(255,0,110,.04);}
+.slink.hilite{color:var(--pink);}
+.slink.hilite:hover{color:var(--pink);border-left-color:var(--pink);}
+
+/* ── MAIN ── */
+#main{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.view{display:none;flex-direction:column;gap:14px;}
+.view.active{display:flex;}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.board-title{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--cyan);text-shadow:var(--glow-cyan);line-height:1;}
+.board-sub{font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:4px;}
+.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.searchbox{display:flex;background:var(--bg2);border:1px solid var(--border-bright);}
+.searchbox:focus-within{border-color:var(--cyan-dim);box-shadow:0 0 0 2px rgba(0,245,255,.1);}
+.searchbox input{background:transparent;border:none;padding:7px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);outline:none;width:160px;}
+.searchbox button{background:none;border:none;border-left:1px solid var(--border-bright);padding:7px 10px;cursor:pointer;color:var(--text-dim);font-size:13px;transition:color .12s;}
+.searchbox button:hover{color:var(--cyan);}
+
+/* ── BUTTONS ── */
+.btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:7px 14px;border:1px solid;cursor:pointer;transition:all var(--transition);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;user-select:none;position:relative;overflow:hidden;}
+.btn:active:not(:disabled){transform:scale(.97);}
+.btn-cyan{background:rgba(0,245,255,.07);border-color:var(--cyan-dim);color:var(--cyan);}
+.btn-cyan:hover:not(:disabled){background:rgba(0,245,255,.15);box-shadow:var(--glow-cyan);}
+.btn-cyan:disabled{opacity:.35;cursor:not-allowed;}
+.btn-ghost{background:transparent;border-color:var(--border-bright);color:var(--text-dim);}
+.btn-ghost:hover{border-color:var(--text-dim);color:var(--text);}
+.btn-pink{background:rgba(255,0,110,.07);border-color:var(--pink-dim);color:var(--pink);}
+.btn-pink:hover{background:rgba(255,0,110,.15);box-shadow:var(--glow-pink);}
+.btn-danger{background:transparent;border-color:rgba(255,0,110,.3);color:var(--pink);}
+.btn-danger:hover{background:rgba(255,0,110,.1);}
+.btn-sm{padding:4px 10px;font-size:10px;}
+.btn-link{background:none;border:none;padding:0;color:var(--cyan-dim);font-family:'JetBrains Mono',monospace;font-size:inherit;cursor:pointer;text-decoration:underline;transition:color var(--transition);}
+.btn-link:hover{color:var(--cyan);}
+
+/* ── FORMS ── */
+input[type=text],input[type=password],textarea,select{width:100%;background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;outline:none;transition:border-color var(--transition),box-shadow var(--transition);resize:vertical;border-radius:var(--radius);}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,245,255,.12);}
+input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:.7;}
+select option{background:var(--bg2);}
+.fbox{background:var(--bg2);border:1px solid var(--border-bright);border-top:2px solid var(--cyan);padding:18px;}
+.fbox-title{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:16px;letter-spacing:2px;}
+.frow{margin-bottom:11px;}
+.frow label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+.ferr{font-size:11px;color:var(--pink);margin-top:4px;font-family:'JetBrains Mono',monospace;min-height:16px;}
+.factions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+/* ── THREAD CARDS ── */
+.thread-list{display:flex;flex-direction:column;gap:2px;}
+.tcard{background:var(--bg2);border:1px solid var(--border);padding:14px 18px;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;transition:all .15s ease;animation:fadein .2s ease both;position:relative;border-left:3px solid transparent;}
+.tcard:hover{background:var(--bg3);border-left-color:var(--cyan);transform:translateX(2px);}
+.tcard.pinned{border-left-color:var(--yellow);background:rgba(255,214,10,.02);}
+.tcard.pinned:hover{border-left-color:var(--yellow);transform:translateX(2px);}
+.tcard.locked .ttitle::after{content:' 🔒';font-size:10px;opacity:.6;}
+@keyframes fadein{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
+.ttitle{font-family:'Exo 2',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4;}
+.tcard:hover .ttitle{color:var(--cyan);}
+.tcard.pinned .ttitle{color:var(--yellow);}
+.tmeta{font-size:11px;color:var(--text-dim);display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-family:'JetBrains Mono',monospace;}
+.tauthor{color:var(--yellow);}
+.tcat-tag{color:var(--cyan-dim);background:rgba(0,245,255,.06);padding:1px 6px;border:1px solid var(--cyan-dark);font-size:10px;}
+.tpin-badge{color:var(--yellow);background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);padding:1px 6px;font-size:10px;}
+.tstats{text-align:right;flex-shrink:0;}
+.rnum{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--cyan-dim);line-height:1;}
+.rlabel{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;}
+
+/* ── THREAD DETAIL ── */
+.thead-card{background:var(--bg2);border:1px solid var(--border-bright);border-top:2px solid var(--cyan);padding:18px 20px;}
+.thead-headline{font-family:'Exo 2',sans-serif;font-size:22px;font-weight:700;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,.25);margin-bottom:12px;line-height:1.35;}
+.thead-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;align-items:center;}
+.thead-meta .author{color:var(--yellow);}
+.thead-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;}
+
+/* ── POSTS ── */
+.post-list{display:flex;flex-direction:column;gap:2px;}
+.pcard{background:var(--bg2);border:1px solid var(--border);display:grid;grid-template-columns:100px 1fr;animation:fadein .18s ease both;}
+.pcard.op-post{border-left:2px solid var(--cyan);}
+.pauthor{border-right:1px solid var(--border);padding:13px 10px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;}
+.pavatar{width:42px;height:42px;background:var(--cyan-dark);border:1px solid var(--cyan-dim);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);margin-bottom:4px;overflow:hidden;border-radius:50%;}
+.pavatar img{width:100%;height:100%;object-fit:cover;}
+.pavatar.admin-av{border-color:var(--pink-dim);color:var(--pink);background:rgba(128,0,58,.3);}
+.pname{font-size:11px;color:var(--yellow);font-family:'JetBrains Mono',monospace;word-break:break-all;}
+.prole{font-size:9px;padding:1px 4px;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;font-family:'JetBrains Mono',monospace;}
+.prole.admin{color:var(--pink);background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.3);}
+.prole.moderator{color:var(--yellow);background:rgba(255,214,10,.1);border:1px solid rgba(255,214,10,.3);}
+.prole.member{color:var(--text-dim);background:var(--border);border:1px solid var(--border-bright);}
+.pavatar.mod-av{border-color:rgba(255,214,10,.4);color:var(--yellow);background:rgba(255,214,10,.08);}
+.pnum{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text-dim);margin-top:3px;}
+.pcontent{padding:14px 18px;min-width:0;}
+.pts{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:10px;}
+.pbody{font-size:14px;line-height:1.85;white-space:pre-wrap;word-break:break-word;color:var(--text);}
+.pactions{display:flex;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap;}
+
+/* ── REPLY ── */
+.reply-box{background:var(--bg2);border:1px solid var(--border-bright);border-top:2px solid var(--cyan-dark);padding:16px 18px;margin-top:12px;border-radius:0 0 var(--radius) var(--radius);}
+
+/* ── IMAGE UPLOAD ── */
+.img-upload-area{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.img-upload-btn{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);border:1px dashed var(--border-bright);padding:5px 10px;cursor:pointer;transition:all .12s;width:fit-content;}
+.img-upload-btn:hover{color:var(--cyan);border-color:var(--cyan);}
+.img-upload-btn input{display:none;}
+.img-preview-wrap{position:relative;display:inline-block;margin-top:4px;}
+.img-preview{max-width:320px;max-height:200px;border:1px solid var(--border-bright);display:block;}
+.img-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);color:var(--pink);border:1px solid var(--pink-dim);font-family:'JetBrains Mono',monospace;font-size:10px;padding:1px 6px;cursor:pointer;line-height:1.6;}
+.img-remove:hover{background:var(--pink);color:#000;}
+.img-uploading{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan-dim);animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0}}
+.post-img{max-width:280px;max-height:200px;width:auto;height:auto;border:1px solid var(--border-bright);display:block;margin-top:10px;cursor:zoom-in;object-fit:cover;transition:border-color .12s;}
+.post-img:hover{border-color:var(--cyan);box-shadow:0 0 8px rgba(0,245,255,.2);}
+/* Lightbox */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:95vw;max-height:92vh;border:1px solid var(--border-bright);}
+#lightbox-close{position:fixed;top:16px;right:22px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:22px;cursor:pointer;z-index:1000;}
+#lightbox-close:hover{color:var(--cyan);}
+.reply-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--cyan-dim);margin-bottom:12px;letter-spacing:2px;}
+.locked-msg{background:rgba(255,214,10,.04);border:1px solid rgba(255,214,10,.2);padding:10px 14px;color:var(--yellow);font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:10px;}
+
+/* ── ADMIN ── */
+.asect{background:var(--bg2);border:1px solid var(--border-bright);border-left:2px solid var(--pink);}
+.asect-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--pink);padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg3);letter-spacing:2px;}
+.asect-body{padding:14px;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:14px;}
+.scard{background:var(--bg3);border:1px solid var(--border-bright);padding:12px;text-align:center;}
+.snum{font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 15px rgba(0,245,255,.35);}
+.slabel{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.atable{width:100%;border-collapse:collapse;font-size:12px;font-family:'JetBrains Mono',monospace;}
+.atable th{text-align:left;padding:5px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border-bright);color:var(--text-dim);}
+.atable td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.atable tr:last-child td{border:none;}
+.atable tr:hover td{background:rgba(0,245,255,.03);}
+.role-sel{background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 6px;width:auto;cursor:pointer;outline:none;}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(4,6,9,.9);z-index:300;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border-bright);border-top:2px solid var(--cyan);padding:24px;width:400px;max-width:94vw;animation:fadein .18s ease;box-shadow:var(--glow-cyan);}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:16px;letter-spacing:2px;}
+.mtabs{display:flex;border-bottom:1px solid var(--border-bright);margin-bottom:16px;}
+.mtab{padding:5px 18px;font-size:11px;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.5px;transition:color .12s;}
+.mtab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.mpanel{display:none;}.mpanel.active{display:block;}
+.mactions{display:flex;gap:8px;margin-top:12px;}
+
+/* ── MISC ── */
+.back-btn{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan-dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.5px;transition:color .12s;width:fit-content;}
+.back-btn:hover{color:var(--cyan);text-shadow:0 0 10px rgba(0,245,255,.4);}
+.empty{text-align:center;padding:56px;color:var(--text-dim);border:1px dashed var(--border-bright);}
+.empty .ebig{font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:var(--bg3);line-height:1;text-shadow:0 0 30px rgba(0,245,255,.08);margin-bottom:8px;}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--cyan-dark);border-top-color:var(--cyan);border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle;margin-right:5px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg2);border:1px solid var(--cyan-dim);color:var(--cyan);padding:10px 18px;font-size:11px;z-index:400;font-family:'JetBrains Mono',monospace;box-shadow:var(--glow-cyan),0 4px 20px rgba(0,0,0,.4);max-width:320px;animation:toastIn .25s ease;overflow:hidden;border-radius:var(--radius);}
+.toast::after{content:'';position:absolute;bottom:0;left:0;height:2px;background:var(--cyan);animation:toastProgress 3s linear forwards;}
+.toast.err{border-color:var(--pink-dim);color:var(--pink);box-shadow:var(--glow-pink),0 4px 20px rgba(0,0,0,.4);}
+.toast.err::after{background:var(--pink);}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toastProgress{from{width:100%}to{width:0%}}
+.pager{display:flex;gap:3px;justify-content:center;padding:10px 0;}
+.pager-btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;border:1px solid var(--border-bright);background:transparent;color:var(--text-dim);cursor:pointer;transition:all .12s;}
+.pager-btn:hover,.pager-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,.07);}
+@media(max-width:720px){
+  .layout{grid-template-columns:1fr;padding:10px 12px;gap:10px;}
+  #sidebar{display:none;}
+  .header-inner{padding:0 12px;height:48px;gap:8px;}
+  .logo{font-size:16px;letter-spacing:2px;}
+  .hnav-bar{display:none;}
+  .header-right{gap:6px;}
+  #clock{display:none;}
+  #lang-switcher{padding:1px;}
+  .lang-btn{padding:3px 5px;font-size:9px;}
+  .user-chip{padding:3px 8px;font-size:10px;}
+  #statusbar{padding:3px 12px;font-size:9px;gap:12px;}
+
+  /* Toolbar */
+  .toolbar{flex-direction:column;align-items:stretch;gap:8px;}
+  .toolbar-right{justify-content:space-between;}
+  .board-title{font-size:16px;}
+  .searchbox{flex:1;}
+  .searchbox input{width:100%!important;}
+  .btn{padding:6px 10px;font-size:10px;}
+
+  /* Thread cards */
+  .tcard{padding:10px 12px;grid-template-columns:1fr auto;gap:8px;}
+  .ttitle{font-size:13px;margin-bottom:4px;}
+  .tmeta{font-size:10px;gap:6px;}
+  .rnum{font-size:18px;}
+  .rlabel{font-size:8px;}
+
+  /* Thread detail */
+  .thead-card{padding:12px 14px;}
+  .thead-headline{font-size:17px;margin-bottom:8px;}
+  .thead-meta{font-size:10px;gap:8px;}
+  .thead-actions{flex-wrap:wrap;gap:4px;}
+
+  /* Posts */
+  .pcard{grid-template-columns:1fr;}
+  .pauthor{flex-direction:row;padding:8px 12px;border-right:none;border-bottom:1px solid var(--border);gap:8px;align-items:center;}
+  .pavatar{width:32px;height:32px;font-size:14px;margin-bottom:0;}
+  .pname{font-size:10px;}
+  .pnum{margin-top:0;margin-left:auto;}
+  .pcontent{padding:10px 12px;}
+  .pbody{font-size:12px;line-height:1.7;}
+  .post-img{max-width:100%;max-height:250px;}
+  .img-preview{max-width:100%;max-height:160px;}
+
+  /* Reply box */
+  .reply-box{padding:12px;}
+  .reply-title{font-size:11px;margin-bottom:8px;}
+  .img-upload-btn{font-size:9px;padding:4px 8px;}
+
+  /* Forms */
+  .fbox{padding:14px;}
+  .fbox-title{font-size:13px;}
+  /* Forms — prevent iOS zoom on focus */
+  input[type=text],input[type=password],textarea,select{font-size:16px;padding:10px 10px;}
+  .factions{flex-direction:column;}
+  .factions .btn{width:100%;text-align:center;}
+
+  /* Admin */
+  .asect-body{padding:10px;overflow-x:auto;}
+  .sgrid{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .scard{padding:8px;}
+  .snum{font-size:22px;}
+  .atable{font-size:10px;}
+  .atable th,.atable td{padding:4px 5px;}
+  .role-sel{font-size:10px;}
+
+  /* Modal */
+  .modal{padding:18px;width:100%;max-width:100vw;border-left:none;border-right:none;}
+  .mactions{flex-direction:column;}
+  .mactions .btn{width:100%;text-align:center;}
+
+  /* Toast */
+  .toast{bottom:12px;right:12px;left:12px;max-width:none;text-align:center;}
+
+  /* Pager */
+  .pager{flex-wrap:wrap;}
+  .pager-btn{padding:6px 12px;}
+
+  /* Empty */
+  .empty{padding:32px 16px;}
+  .empty .ebig{font-size:36px;}
+}
+
+/* ── Tablet breakpoint ── */
+@media(min-width:721px) and (max-width:960px){
+  .layout{grid-template-columns:160px 1fr;padding:14px 16px;gap:12px;}
+  .header-inner{padding:0 16px;}
+  .hnav{padding:4px 8px;font-size:10px;}
+  .cat-item{padding:6px 10px;font-size:10px;}
+  .sbox-title{font-size:9px;padding:6px 10px;}
+  .board-title{font-size:17px;}
+  .searchbox input{width:120px;}
+  .pcard{grid-template-columns:80px 1fr;}
+  .thead-headline{font-size:19px;}
+}
+
+/* ── Mobile sidebar toggle (hamburger) ── */
+#mobile-menu-btn{display:none;background:none;border:1px solid var(--border-bright);color:var(--cyan-dim);font-size:18px;padding:2px 7px;cursor:pointer;line-height:1;font-family:'JetBrains Mono',monospace;}
+#mobile-menu-btn:hover{color:var(--cyan);border-color:var(--cyan-dim);}
+#mobile-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(4,6,9,.85);z-index:250;backdrop-filter:blur(4px);}
+#mobile-sidebar{display:none;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--bg2);border-right:1px solid var(--border-bright);z-index:260;overflow-y:auto;padding:14px 0;animation:slideIn .2s ease;}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+#mobile-sidebar .sbox{border:none;border-bottom:1px solid var(--border);}
+#mobile-sidebar .sbox-title{background:transparent;}
+@media(max-width:720px){
+  #mobile-menu-btn{display:block;}
+}
+
+/* ── SCROLL TO TOP ── */
+#scroll-top{position:fixed;bottom:22px;left:22px;width:36px;height:36px;background:var(--bg2);border:1px solid var(--cyan-dark);color:var(--cyan-dim);font-size:16px;cursor:pointer;z-index:150;display:none;align-items:center;justify-content:center;transition:all var(--transition);font-family:'JetBrains Mono',monospace;border-radius:var(--radius);}
+#scroll-top:hover{background:rgba(0,245,255,.1);border-color:var(--cyan-dim);color:var(--cyan);box-shadow:var(--glow-cyan);}
+#scroll-top.show{display:flex;}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.breadcrumb span{cursor:pointer;transition:color var(--transition);}
+.breadcrumb span:hover{color:var(--cyan);}
+.breadcrumb .sep{color:var(--border-bright);cursor:default;}
+.breadcrumb .current{color:var(--cyan-dim);cursor:default;}
+
+/* ── SKELETON LOADING ── */
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:skeleton-shimmer 1.5s ease infinite;border-radius:var(--radius);}
+@keyframes skeleton-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:68px;margin-bottom:2px;}
+.skeleton-line{height:12px;margin-bottom:8px;}
+.skeleton-line.w60{width:60%;}
+.skeleton-line.w40{width:40%;}
+.skeleton-line.w80{width:80%;}
+
+/* ── LINK UNDERLINE EFFECT ── */
+.cat-item,.slink,.hnav,.tcard{-webkit-tap-highlight-color:transparent;}
+
+/* ── SEARCH CLEAR BUTTON ── */
+.searchbox .clear-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;padding:4px 6px;display:none;font-family:'JetBrains Mono',monospace;transition:color var(--transition);}
+.searchbox .clear-btn:hover{color:var(--pink);}
+.searchbox .clear-btn.show{display:block;}
+
+/* ── LANG SWITCHER ── */
+#lang-switcher{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border-bright);padding:2px;}
+.lang-btn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .12s;}
+.lang-btn:hover{color:var(--cyan);}
+.lang-btn.active{background:rgba(0,245,255,.12);color:var(--cyan);box-shadow:inset 0 0 6px rgba(0,245,255,.1);}
+
+/* ── PROFILE ── */
+.profile-header{background:var(--bg2);border:1px solid var(--border-bright);border-top:2px solid var(--cyan);padding:20px;display:flex;gap:18px;align-items:flex-start;}
+.profile-avatar{width:72px;height:72px;border:2px solid var(--cyan-dark);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:28px;font-weight:700;color:var(--cyan);background:var(--bg3);flex-shrink:0;overflow:hidden;border-radius:50%;}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;}
+.avatar-upload{margin-top:8px;}
+.avatar-upload label{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan-dim);border:1px solid var(--border-bright);cursor:pointer;border-radius:var(--radius);transition:all .15s;text-transform:uppercase;}
+.avatar-upload label:hover{border-color:var(--cyan);color:var(--cyan);}
+.avatar-upload input{display:none;}
+.avatar-preview{width:64px;height:64px;border:2px solid var(--cyan-dark);margin-top:6px;overflow:hidden;display:none;border-radius:50%;}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;}
+.profile-info{flex:1;min-width:0;}
+.profile-name{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);margin-bottom:4px;}
+.profile-bio{font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;}
+.profile-stats{display:flex;gap:14px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
+.profile-stats span b{color:var(--cyan);}
+.profile-rank{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border:1px solid;border-radius:var(--radius);}
+.profile-tabs{display:flex;gap:2px;margin-top:14px;}
+.profile-tab{padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;color:var(--text-dim);border:1px solid transparent;text-transform:uppercase;letter-spacing:.5px;transition:all var(--transition);}
+.profile-tab.active{color:var(--cyan);border-color:var(--cyan-dark);background:rgba(0,245,255,.05);}
+.profile-section{background:var(--bg2);border:1px solid var(--border);padding:14px;margin-top:2px;}
+
+/* ── REP VOTE BUTTONS ── */
+.vote-btn{background:none;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 8px;cursor:pointer;transition:all var(--transition);border-radius:var(--radius);}
+.vote-btn:hover{border-color:var(--cyan-dim);color:var(--cyan);}
+.vote-btn.voted-up{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,.1);}
+.vote-btn.voted-down{border-color:var(--pink);color:var(--pink);background:rgba(255,0,110,.1);}
+.vote-score{font-family:'Orbitron',sans-serif;font-size:11px;min-width:20px;text-align:center;}
+
+/* ── BOOKMARK BTN ── */
+.bookmark-btn{background:none;border:1px solid var(--border-bright);color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;cursor:pointer;transition:all var(--transition);border-radius:var(--radius);}
+.bookmark-btn:hover{border-color:var(--yellow);color:var(--yellow);}
+.bookmark-btn.active{border-color:var(--yellow);color:var(--yellow);background:rgba(255,214,10,.08);}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{background:none;border:1px solid var(--border-bright);color:var(--text-dim);font-size:14px;padding:3px 7px;cursor:pointer;transition:all var(--transition);border-radius:var(--radius);}
+.theme-toggle:hover{border-color:var(--cyan-dim);color:var(--cyan);}
+
+/* ── LIGHT THEME ── */
+html.light{--void:#e8ecf0;--bg:#f2f4f7;--bg2:#ffffff;--bg3:#eaecf0;--cyan:#006d75;--cyan-dim:#008c96;--cyan-dark:#b0e0e5;--pink:#d63384;--pink-dim:#e898b8;--yellow:#b86e00;--text:#1a2030;--text-dim:#6b7a8d;--border:#d0d7de;--border-bright:#bcc5cf;--glow-cyan:0 0 6px rgba(0,109,117,.2);--glow-pink:0 0 6px rgba(214,51,132,.2);}
+html.light body{background:var(--bg);}
+html.light body::before{background-image:linear-gradient(rgba(0,109,117,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,109,117,.04) 1px,transparent 1px);}
+html.light header{background:rgba(255,255,255,.95);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+html.light .toast{box-shadow:0 2px 12px rgba(0,0,0,.12);}
+
+/* ── MARKDOWN PREVIEW ── */
+.md-toolbar{display:flex;gap:2px;margin-bottom:6px;}
+.md-toolbar button{background:var(--bg3);border:1px solid var(--border-bright);color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;cursor:pointer;transition:all var(--transition);border-radius:var(--radius);}
+.md-toolbar button:hover{color:var(--cyan);border-color:var(--cyan-dim);}
+.md-rendered{font-size:14px;line-height:1.85;word-break:break-word;}
+.md-rendered code{background:var(--bg3);padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid var(--border);border-radius:3px;color:var(--cyan);}
+.md-rendered pre{background:var(--bg3);border:1px solid var(--border);padding:10px 14px;overflow-x:auto;margin:8px 0;border-radius:var(--radius);}
+.md-rendered pre code{background:none;border:none;padding:0;}
+.md-rendered blockquote{border-left:3px solid var(--cyan-dark);padding:4px 12px;margin:6px 0;color:var(--text-dim);background:rgba(0,245,255,.02);}
+.md-rendered strong{color:var(--cyan);font-weight:600;}
+.md-rendered em{color:var(--yellow);}
+.md-rendered a{color:var(--cyan);text-decoration:underline;}
+.md-rendered img{max-width:100%;border:1px solid var(--border-bright);margin:6px 0;border-radius:var(--radius);}
+
+/* ── DRAG DROP OVERLAY ── */
+.drag-overlay{position:fixed;inset:0;background:rgba(0,245,255,.06);border:3px dashed var(--cyan);z-index:500;display:none;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:18px;color:var(--cyan);letter-spacing:4px;pointer-events:none;backdrop-filter:blur(2px);}
+.drag-overlay.show{display:flex;}
+
+/* ── AUTO-REFRESH INDICATOR ── */
+.refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block;margin-right:5px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="statusbar">
+  <span>◈ PLOV.LAN</span>
+  <span id="sb-boards">BOARDS: –</span>
+  <span id="sb-threads">THREADS: –</span>
+  <span id="sb-posts">POSTS: –</span>
+  <span>v1.0.0</span>
+</div>
+
+<header>
+  <div class="header-inner">
+    <button id="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+    <div class="logo" onclick="goHome()">PLOV<em>//</em>CHAN</div>
+    <nav class="hnav-bar">
+      <div class="hnav" onclick="goHome()">[ Boards ]</div>
+      <div class="hnav" onclick="window.location='/messenger.html'">[ ✉ Messenger ]</div>
+      <div class="hnav" id="hn-events" onclick="nav('events')">[ 📅 Events ]</div>
+      <div class="hnav" id="hn-cpw" onclick="nav('cpw')" style="display:none">[ Password ]</div>
+      <div class="hnav adm" id="hn-admin" onclick="nav('admin')" style="display:none">[ ★ Admin ]</div>
+      <div class="hnav" id="hn-logout" onclick="doLogout()" style="display:none">[ Logout ]</div>
+    </nav>
+    <div class="header-right">
+      <div id="huser"></div>
+      <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark"><span style="font-family:JetBrains Mono,monospace;font-size:11px">◑ LIGHT</span></button>
+      <div id="lang-switcher">
+        <button class="lang-btn" id="lb-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="lb-ru" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn active" id="lb-uz" onclick="setLang('uz')">UZ</button>
+      </div>
+      <div id="clock"></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sbox">
+      <div class="sbox-title">// BOARDS</div>
+      <div id="cat-list"></div>
+    </div>
+    <div class="sbox">
+      <div class="sbox-title">// SYSTEM</div>
+      <div id="slinks"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+
+    <!-- Board view -->
+    <div id="view-board" class="view">
+      <div class="toolbar">
+        <div>
+          <div class="board-title" id="board-title">ALL_BOARDS</div>
+          <div class="board-sub" id="board-count"></div>
+        </div>
+        <div class="toolbar-right">
+          <div class="searchbox">
+            <input type="text" id="q" placeholder="SEARCH THREADS…" onkeydown="if(event.key==='Enter')doSearch()" oninput="doSearchDebounced();toggleSearchClear()">
+            <button class="clear-btn" id="search-clear" onclick="clearSearch()">✕</button>
+            <button onclick="doSearch()">⌕</button>
+          </div>
+          <button class="btn btn-cyan" data-i18n="new_thread" onclick="startNewThread()">[ + NEW_THREAD ]</button>
+        </div>
+      </div>
+      <div class="thread-list" id="thread-list"></div>
+      <div class="pager" id="pager"></div>
+    </div>
+
+    <!-- New thread -->
+    <div id="view-new" class="view">
+      <div class="back-btn" data-i18n="back" onclick="nav('board')">◄ BACK_TO_BOARD</div>
+      <div class="fbox">
+        <div class="fbox-title" data-i18n="new_title">// NEW_THREAD</div>
+        <div class="frow"><label data-i18n="lbl_board">Node (Board)</label><select id="nt-cat"></select></div>
+        <div class="frow"><label data-i18n="lbl_subject">Subject Line</label><input type="text" id="nt-title" placeholder="Thread subject…" maxlength="120"></div>
+        <div class="frow"><label data-i18n="lbl_body">Message Body</label>
+          <div class="md-toolbar">
+            <button onclick="insertMdTag('nt-body','**','**')" title="Bold"><b>B</b></button>
+            <button onclick="insertMdTag('nt-body','*','*')" title="Italic"><i>I</i></button>
+            <button onclick="insertMdTag('nt-body','~~','~~')" title="Strikethrough"><s>S</s></button>
+            <button onclick="insertMdTag('nt-body','\n```\n','\n```')" title="Code block">&lt;/&gt;</button>
+            <button onclick="insertMdTag('nt-body','`','`')" title="Inline code">code</button>
+            <button onclick="insertMdTag('nt-body','> ','')" title="Quote">❝</button>
+            <button onclick="insertMdTag('nt-body','[','](url)')" title="Link">🔗</button>
+          </div>
+          <textarea id="nt-body" rows="7" placeholder="Write your message… (Markdown supported)"></textarea>
+        </div>
+        <div class="frow">
+          <label style="color:var(--text-dim)">Image <span style="font-size:10px;opacity:.6">(optional)</span></label>
+          <div class="img-upload-area">
+            <label class="img-upload-btn">
+              <span>📎 SELECT IMAGE</span>
+              <input type="file" id="nt-img-file" accept="image/*" onchange="handleImgSelect(this,'nt-img-preview','nt-img-url','nt-img-status')">
+            </label>
+            <span class="img-uploading" id="nt-img-status" style="display:none">UPLOADING…</span>
+            <div class="img-preview-wrap" id="nt-img-preview" style="display:none">
+              <img class="img-preview" src="" alt="">
+              <button class="img-remove" onclick="removeImg('nt-img-preview','nt-img-url','nt-img-file','nt-img-status')">✕</button>
+            </div>
+            <input type="hidden" id="nt-img-url" value="">
+          </div>
+        </div>
+        <div class="frow">
+          <label style="color:var(--text-dim);display:flex;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="nt-anon" style="width:auto;margin-right:8px;accent-color:var(--cyan)">
+            <span style="font-size:12px;text-transform:none">Post Anonymously</span>
+          </label>
+        </div>
+        <div class="ferr" id="nt-err"></div>
+        <div class="factions">
+          <button class="btn btn-cyan" id="nt-btn" data-i18n="transmit" onclick="submitThread()">[ TRANSMIT ]</button>
+          <button class="btn btn-ghost" data-i18n="abort" onclick="nav('board')">[ ABORT ]</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thread detail -->
+    <div id="view-thread" class="view">
+      <div class="back-btn" data-i18n="back" onclick="goBack()">◄ BACK_TO_BOARD</div>
+      <div id="thread-detail"></div>
+    </div>
+
+    <!-- Change password -->
+    <div id="view-cpw" class="view">
+      <div class="back-btn" data-i18n="back_short" onclick="nav('board')">◄ BACK</div>
+      <div class="fbox" style="max-width:400px;">
+        <div class="fbox-title" data-i18n="cpw_title">// CHANGE_PASSWORD</div>
+        <div class="frow"><label data-i18n="lbl_old">Current Password</label><input type="password" id="cpw-old"></div>
+        <div class="frow"><label data-i18n="lbl_new">New Password</label><input type="password" id="cpw-new"></div>
+        <div class="frow"><label data-i18n="lbl_confirm">Confirm New Password</label><input type="password" id="cpw-c" onkeydown="if(event.key==='Enter')submitCpw()"></div>
+        <div class="ferr" id="cpw-err"></div>
+        <div class="factions">
+          <button class="btn btn-cyan" data-i18n="update" onclick="submitCpw()">[ UPDATE ]</button>
+          <button class="btn btn-ghost" data-i18n="abort" onclick="nav('board')">[ ABORT ]</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div id="view-admin" class="view">
+      <div class="back-btn" data-i18n="back" onclick="nav('board')">◄ BACK_TO_BOARD</div>
+      <div id="admin-panel"></div>
+    </div>
+
+    <!-- Profile -->
+    <div id="view-profile" class="view">
+      <div class="back-btn" onclick="goBack()">◄ BACK</div>
+      <div id="profile-panel"></div>
+    </div>
+
+    <!-- Bookmarks -->
+    <div id="view-bookmarks" class="view">
+      <div class="back-btn" onclick="nav('board')">◄ BACK</div>
+      <div class="toolbar"><div><div class="board-title">📌 BOOKMARKS</div></div></div>
+      <div id="bookmarks-list"></div>
+    </div>
+
+    <!-- Events -->
+    <div id="view-events" class="view">
+      <div class="back-btn" onclick="nav('board')">◄ BACK</div>
+      <div class="toolbar">
+        <div><div class="board-title">📅 LAN EVENTS & MEETUPS</div></div>
+        <div class="toolbar-right">
+          <button class="btn btn-cyan" id="btn-new-event" style="display:none" onclick="openNewEventModal()">[ + CREATE EVENT ]</button>
+        </div>
+      </div>
+      <div id="events-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Mobile sidebar overlay -->
+<div id="mobile-sidebar-overlay" onclick="closeMobileSidebar()"></div>
+<div id="mobile-sidebar">
+  <div class="sbox">
+    <div class="sbox-title">// BOARDS</div>
+    <div id="mobile-cat-list"></div>
+  </div>
+  <div class="sbox">
+    <div class="sbox-title">// SYSTEM</div>
+    <div id="mobile-slinks"></div>
+  </div>
+</div>
+
+<!-- Auth modal -->
+<div class="overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="modal">
+    <div class="modal-title" data-i18n="auth_title">// ACCESS_SYSTEM</div>
+    <div class="mtabs">
+      <div class="mtab active" id="tab-login" data-i18n="tab_login" onclick="switchTab('login')">LOGIN</div>
+      <div class="mtab" id="tab-reg" data-i18n="tab_reg" onclick="switchTab('reg')">REGISTER</div>
+    </div>
+    <div class="mpanel active" id="p-login">
+      <div class="frow"><label data-i18n="lbl_user">Username</label><input type="text" id="l-u" autocomplete="username"></div>
+      <div class="frow"><label data-i18n="lbl_pass">Password</label><input type="password" id="l-p" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="ferr" id="l-err"></div>
+      <div class="mactions">
+        <button class="btn btn-cyan" id="l-btn" data-i18n="authenticate" onclick="doLogin()">[ AUTHENTICATE ]</button>
+        <button class="btn btn-ghost" data-i18n="abort" onclick="closeAuth()">[ ABORT ]</button>
+      </div>
+    </div>
+    <div class="mpanel" id="p-reg">
+      <div class="frow"><label data-i18n="lbl_user">Username</label><input type="text" id="r-u" autocomplete="username"></div>
+      <div class="frow"><label data-i18n="lbl_pass">Password</label><input type="password" id="r-p" autocomplete="new-password"></div>
+      <div class="frow"><label data-i18n="lbl_conf">Confirm Password</label><input type="password" id="r-p2" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()"></div>
+      <div class="ferr" id="r-err"></div>
+      <div class="mactions">
+        <button class="btn btn-cyan" id="r-btn" data-i18n="register" onclick="doRegister()">[ REGISTER ]</button>
+        <button class="btn btn-ghost" data-i18n="abort" onclick="closeAuth()">[ ABORT ]</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div class="overlay" id="event-modal-overlay" onclick="if(event.target===this)closeEventModal()">
+  <div class="modal" style="width:500px;max-width:94vw;">
+    <div class="modal-title">// NEW_EVENT</div>
+    <div class="frow"><label>Event Title</label><input type="text" id="ev-title" placeholder="Event name..."></div>
+    <div class="frow"><label>Description</label>
+      <div class="md-toolbar">
+        <button onclick="insertMdTag('ev-desc','**','**')" title="Bold"><b>B</b></button>
+        <button onclick="insertMdTag('ev-desc','*','*')" title="Italic"><i>I</i></button>
+      </div>
+      <textarea id="ev-desc" rows="4" placeholder="Event details... (Markdown supported)"></textarea>
+    </div>
+    <div class="frow"><label>Event Date/Time</label><input type="datetime-local" id="ev-date" style="width:100%;height:38px;background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;outline:none;border-radius:var(--radius);"></div>
+    <div class="frow"><label>Location / Link</label><input type="text" id="ev-loc" placeholder="Physical location or URL..."></div>
+    <div class="ferr" id="ev-err"></div>
+    <div class="mactions">
+      <button class="btn btn-cyan" id="ev-btn" onclick="submitEvent()">[ CREATE EVENT ]</button>
+      <button class="btn btn-ghost" onclick="closeEventModal()">[ CANCEL ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drag & drop overlay -->
+<div class="drag-overlay" id="drag-overlay">[ DROP IMAGE HERE ]</div>
+
+<!-- Scroll to top -->
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Scroll to top">▲</button>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close" onclick="closeLightbox()">✕</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+
+// ═══════════════════════════════════════════════════
+//  I18N — TRANSLATIONS
+// ═══════════════════════════════════════════════════
+const LANGS = {
+  en: {
+    // Nav
+    boards: '[ Boards ]',
+    password: '[ Password ]',
+    admin: '[ ★ Admin ]',
+    logout: '[ Logout ]',
+    login_btn: '[_LOGIN_]',
+    // Sidebar
+    s_boards: '// BOARDS',
+    s_system: '// SYSTEM',
+    s_all: '[#] ALL_BOARDS',
+    s_admin: '[ ★ ADMIN ]',
+    s_changepw: '[ CHANGE_PW ]',
+    s_logout: '[ LOGOUT ]',
+    s_login: '[ LOGIN ]',
+    // Statusbar
+    sb_boards: 'BOARDS',
+    sb_threads: 'THREADS',
+    sb_posts: 'POSTS',
+    // Board
+    all_boards: 'ALL_BOARDS',
+    n_threads: (n) => `${n} thread${n !== 1 ? 's' : ''}`,
+    search_ph: 'SEARCH… (Ctrl+K)',
+    new_thread: '[ + NEW_THREAD ]',
+    no_threads: 'NO_THREADS_FOUND',
+    replies: 'replies',
+    last: 'last',
+    // Thread detail
+    back: '◄ BACK_TO_BOARD',
+    back_short: '◄ BACK',
+    pin: '[ PIN ]', unpin: '[ UNPIN ]',
+    lock: '[ LOCK ]', unlock: '[ UNLOCK ]',
+    delete: '[ DELETE ]',
+    del_my_thread: '[ DELETE MY THREAD ]',
+    locked_thread: '🔒 THREAD_LOCKED — no new replies.',
+    login_to_reply: 'LOGIN',
+    login_to_reply_pre: '→ ',
+    login_to_reply_post: ' to reply.',
+    reply_title: '// QUICK_REPLY',
+    reply_ph: '// write your reply…',
+    transmit: '[ TRANSMIT ]',
+    transmitting: '[ TRANSMITTING… ]',
+    edit: '[ EDIT ]',
+    save: '[ SAVE ]',
+    abort: '[ ABORT ]',
+    cancel: '[ CANCEL ]',
+    theme_dark: '◐ DARK',
+    theme_light: '◑ LIGHT',
+    del_post: '[ DELETE ]',
+    op: 'OP',
+    edited: '(edited)',
+    views: '👁',
+    n_replies: (n) => `${n} repl${n !== 1 ? 'ies' : 'y'}`,
+    locked_label: '🔒 LOCKED',
+    pinned_badge: '◈ PINNED',
+    // New thread form
+    new_title: '// NEW_THREAD',
+    lbl_board: 'Node (Board)',
+    lbl_subject: 'Subject Line',
+    lbl_body: 'Message Body',
+    body_ph: 'Write your message…',
+    subject_ph: 'Thread subject…',
+    // Change password
+    cpw_title: '// CHANGE_PASSWORD',
+    lbl_old: 'Current Password',
+    lbl_new: 'New Password',
+    lbl_confirm: 'Confirm New Password',
+    update: '[ UPDATE ]',
+    // Auth modal
+    auth_title: '// ACCESS_SYSTEM',
+    tab_login: 'LOGIN',
+    tab_reg: 'REGISTER',
+    lbl_user: 'Username',
+    lbl_pass: 'Password',
+    lbl_conf: 'Confirm Password',
+    authenticate: '[ AUTHENTICATE ]',
+    register: '[ REGISTER ]',
+    // Admin
+    adm_stats: '// SYSTEM_STATS',
+    adm_users: '// USER_MANAGEMENT',
+    adm_boards: '// BOARD_MANAGEMENT',
+    col_id: '#', col_user: 'Username', col_role: 'Role',
+    col_threads: 'Threads', col_posts: 'Posts',
+    col_joined: 'Joined', col_actions: 'Actions',
+    col_slug: 'Slug', col_name: 'Name', col_icon: 'Icon',
+    you: '[you]',
+    del: '[ DEL ]',
+    add_board: '[ + ADD_BOARD ]',
+    slug_ph: 'e.g. gaming',
+    name_ph: 'Board Name',
+    lbl_slug: 'SLUG', lbl_name: 'NAME', lbl_icon: 'ICON',
+    stat_users: 'USERS', stat_threads: 'THREADS',
+    stat_posts: 'POSTS', stat_admins: 'ADMINS', stat_mods: 'MODS', stat_banned: 'BANNED',
+    // Toasts
+    t_authenticated: (u) => `AUTHENTICATED: ${u}`,
+    t_registered: (u) => `REGISTERED: ${u}`,
+    t_logout: 'SESSION_TERMINATED',
+    t_pw_updated: 'PASSWORD_UPDATED',
+    t_thread_posted: 'THREAD_TRANSMITTED',
+    t_reply_posted: 'REPLY_TRANSMITTED',
+    t_thread_deleted: 'THREAD_DELETED',
+    t_post_deleted: 'POST_DELETED',
+    t_pinned: 'THREAD_PINNED', t_unpinned: 'THREAD_UNPINNED',
+    t_locked: 'THREAD_LOCKED', t_unlocked: 'THREAD_UNLOCKED',
+    t_role_set: (r) => `ROLE_SET: ${r}`,
+    t_user_deleted: (u) => `USER_DELETED: ${u}`,
+    t_board_created: (n) => `BOARD_CREATED: ${n}`,
+    t_board_deleted: 'BOARD_DELETED',
+    t_admin_req: 'ADMIN_ACCESS_REQUIRED',
+    t_conn_err: (e) => `CONN_ERROR: ${e}`,
+    // Errors
+    e_all_fields: '// ALL_FIELDS_REQUIRED',
+    e_pw_mismatch: '// PASSWORD_MISMATCH',
+    e_pw_short: '// PASSWORD_TOO_SHORT (min 6)',
+    e_subject: '// SUBJECT_REQUIRED',
+    e_msg_short: '// MESSAGE_TOO_SHORT (min 10 chars)',
+    e_reply_empty: '// REPLY_CANNOT_BE_EMPTY',
+    e_not_logged: '// NOT_LOGGED_IN',
+    e_slug_req: '// SLUG_REQUIRED',
+    e_name_req: '// NAME_REQUIRED',
+    c_del_thread: 'DELETE this thread and ALL its posts? Cannot be undone.',
+    c_del_post: 'DELETE this post?',
+    c_del_user: (u) => `DELETE user "${u}" and ALL their content?`,
+    c_del_board: (n) => `DELETE board "${n}" and ALL its threads?`,
+    // Empty / loading
+    loading: 'LOADING…',
+    no_threads_big: '404',
+    err_big: 'ERR',
+    search_prefix: 'SEARCH:',
+  },
+
+  ru: {
+    boards: '[ Разделы ]',
+    password: '[ Пароль ]',
+    admin: '[ ★ Админ ]',
+    logout: '[ Выйти ]',
+    login_btn: '[_ВОЙТИ_]',
+    s_boards: '// РАЗДЕЛЫ',
+    s_system: '// СИСТЕМА',
+    s_all: '[#] ВСЕ_РАЗДЕЛЫ',
+    s_admin: '[ ★ АДМИН ]',
+    s_changepw: '[ СМЕНИТЬ_ПАРОЛЬ ]',
+    s_logout: '[ ВЫЙТИ ]',
+    s_login: '[ ВОЙТИ ]',
+    sb_boards: 'РАЗДЕЛЫ',
+    sb_threads: 'ТЕМЫ',
+    sb_posts: 'ПОСТЫ',
+    all_boards: 'ВСЕ_РАЗДЕЛЫ',
+    n_threads: (n) => `${n} тем${n===1?'а':n<5?'ы':''}`,
+    search_ph: 'ПОИСК ТЕМ…',
+    new_thread: '[ + НОВАЯ_ТЕМА ]',
+    no_threads: 'ТЕМ_НЕ_НАЙДЕНО',
+    replies: 'ответов',
+    last: 'посл.',
+    back: '◄ НАЗАД_К_РАЗДЕЛАМ',
+    back_short: '◄ НАЗАД',
+    pin: '[ ЗАКРЕПИТЬ ]', unpin: '[ ОТКРЕПИТЬ ]',
+    lock: '[ ЗАКРЫТЬ ]', unlock: '[ ОТКРЫТЬ ]',
+    delete: '[ УДАЛИТЬ ]',
+    del_my_thread: '[ УДАЛИТЬ МОЮ ТЕМУ ]',
+    locked_thread: '🔒 ТЕМА_ЗАКРЫТА — новые ответы невозможны.',
+    login_to_reply: 'ВОЙДИТЕ',
+    login_to_reply_pre: '→ ',
+    login_to_reply_post: ', чтобы ответить.',
+    reply_title: '// БЫСТРЫЙ_ОТВЕТ',
+    reply_ph: '// напишите ответ…',
+    transmit: '[ ОТПРАВИТЬ ]',
+    transmitting: '[ ОТПРАВКА… ]',
+    edit: '[ ИЗМЕНИТЬ ]',
+    save: '[ СОХРАНИТЬ ]',
+    abort: '[ ОТМЕНА ]',
+    cancel: '[ ОТМЕНА ]',
+    theme_dark: '◐ ТЁМН',
+    theme_light: '◑ СВЕТ',
+    del_post: '[ УДАЛИТЬ ]',
+    op: 'АВТ',
+    edited: '(изменено)',
+    views: '👁',
+    n_replies: (n) => `${n} ответ${n===1?'':n<5?'а':'ов'}`,
+    locked_label: '🔒 ЗАКРЫТА',
+    pinned_badge: '◈ ЗАКРЕПЛЕНО',
+    new_title: '// НОВАЯ_ТЕМА',
+    lbl_board: 'Раздел',
+    lbl_subject: 'Тема',
+    lbl_body: 'Сообщение',
+    body_ph: 'Напишите сообщение…',
+    subject_ph: 'Заголовок темы…',
+    cpw_title: '// СМЕНА_ПАРОЛЯ',
+    lbl_old: 'Текущий пароль',
+    lbl_new: 'Новый пароль',
+    lbl_confirm: 'Подтвердите пароль',
+    update: '[ ОБНОВИТЬ ]',
+    auth_title: '// ВХОД_В_СИСТЕМУ',
+    tab_login: 'ВОЙТИ',
+    tab_reg: 'РЕГИСТРАЦИЯ',
+    lbl_user: 'Имя пользователя',
+    lbl_pass: 'Пароль',
+    lbl_conf: 'Подтвердите пароль',
+    authenticate: '[ ВОЙТИ ]',
+    register: '[ ЗАРЕГИСТРИРОВАТЬСЯ ]',
+    adm_stats: '// СТАТИСТИКА',
+    adm_users: '// УПРАВЛЕНИЕ_ПОЛЬЗОВАТЕЛЯМИ',
+    adm_boards: '// УПРАВЛЕНИЕ_РАЗДЕЛАМИ',
+    col_id: '#', col_user: 'Пользователь', col_role: 'Роль',
+    col_threads: 'Темы', col_posts: 'Посты',
+    col_joined: 'Дата', col_actions: 'Действия',
+    col_slug: 'Слаг', col_name: 'Название', col_icon: 'Иконка',
+    you: '[вы]',
+    del: '[ УДЛ ]',
+    add_board: '[ + ДОБАВИТЬ ]',
+    slug_ph: 'напр. games',
+    name_ph: 'Название раздела',
+    lbl_slug: 'СЛАГ', lbl_name: 'НАЗВАНИЕ', lbl_icon: 'ИКОНКА',
+    stat_users: 'ПОЛЬЗ.', stat_threads: 'ТЕМЫ',
+    stat_posts: 'ПОСТЫ', stat_admins: 'АДМИНЫ', stat_mods: 'МОДЫ', stat_banned: 'ЗАБАН.',
+    t_authenticated: (u) => `ВХОД: ${u}`,
+    t_registered: (u) => `ЗАРЕГИСТРИРОВАН: ${u}`,
+    t_logout: 'ВЫХОД_ВЫПОЛНЕН',
+    t_pw_updated: 'ПАРОЛЬ_ОБНОВЛЁН',
+    t_thread_posted: 'ТЕМА_СОЗДАНА',
+    t_reply_posted: 'ОТВЕТ_ОТПРАВЛЕН',
+    t_thread_deleted: 'ТЕМА_УДАЛЕНА',
+    t_post_deleted: 'ПОСТ_УДАЛЁН',
+    t_pinned: 'ТЕМА_ЗАКРЕПЛЕНА', t_unpinned: 'ТЕМА_ОТКРЕПЛЕНА',
+    t_locked: 'ТЕМА_ЗАКРЫТА', t_unlocked: 'ТЕМА_ОТКРЫТА',
+    t_role_set: (r) => `РОЛЬ: ${r}`,
+    t_user_deleted: (u) => `ПОЛЬЗОВАТЕЛЬ_УДАЛЁН: ${u}`,
+    t_board_created: (n) => `РАЗДЕЛ_СОЗДАН: ${n}`,
+    t_board_deleted: 'РАЗДЕЛ_УДАЛЁН',
+    t_admin_req: 'НУЖНЫ_ПРАВА_АДМИНА',
+    t_conn_err: (e) => `ОШИБКА_СОЕДИНЕНИЯ: ${e}`,
+    e_all_fields: '// ЗАПОЛНИТЕ_ВСЕ_ПОЛЯ',
+    e_pw_mismatch: '// ПАРОЛИ_НЕ_СОВПАДАЮТ',
+    e_pw_short: '// ПАРОЛЬ_СЛИШКОМ_КОРОТКИЙ (мин 6)',
+    e_subject: '// ВВЕДИТЕ_ТЕМУ',
+    e_msg_short: '// СООБЩЕНИЕ_СЛИШКОМ_КОРОТКОЕ (мин 10)',
+    e_reply_empty: '// ОТВЕТ_НЕ_МОЖЕТ_БЫТЬ_ПУСТЫМ',
+    e_not_logged: '// НЕ_АВТОРИЗОВАН',
+    e_slug_req: '// ВВЕДИТЕ_СЛАГ',
+    e_name_req: '// ВВЕДИТЕ_НАЗВАНИЕ',
+    c_del_thread: 'УДАЛИТЬ эту тему и ВСЕ её посты? Отменить невозможно.',
+    c_del_post: 'УДАЛИТЬ этот пост?',
+    c_del_user: (u) => `УДАЛИТЬ пользователя "${u}" и весь его контент?`,
+    c_del_board: (n) => `УДАЛИТЬ раздел "${n}" и ВСЕ его темы?`,
+    loading: 'ЗАГРУЗКА…',
+    no_threads_big: '404',
+    err_big: 'ОШИБКА',
+    search_prefix: 'ПОИСК:',
+  },
+
+  uz: {
+    boards: "[ Boʼlimlar ]",
+    password: "[ Parol ]",
+    admin: "[ ★ Admin ]",
+    logout: "[ Chiqish ]",
+    login_btn: "[_KIRISH_]",
+    s_boards: "// BOʼLIMLAR",
+    s_system: "// TIZIM",
+    s_all: "[#] BARCHA_BOʼLIMLAR",
+    s_admin: "[ ★ ADMIN ]",
+    s_changepw: "[ PAROL_OʼZGARTIRISH ]",
+    s_logout: "[ CHIQISH ]",
+    s_login: "[ KIRISH ]",
+    sb_boards: "BOʼLIMLAR",
+    sb_threads: "MAVZULAR",
+    sb_posts: "POSTLAR",
+    all_boards: "BARCHA_BOʼLIMLAR",
+    n_threads: (n) => `${n} mavzu`,
+    search_ph: "QIDIRISH… (Ctrl+K)",
+    new_thread: "[ + YANGI_MAVZU ]",
+    no_threads: "MAVZULAR_TOPILMADI",
+    replies: "javob",
+    last: "oxirgi",
+    back: "\u25C4 BOʼLIMLARGA_QAYTISH",
+    back_short: "\u25C4 ORQAGA",
+    pin: "[ MAHKAMLASH ]", unpin: "[ OLIB_TASHLASH ]",
+    lock: "[ YOPISH ]", unlock: "[ OCHISH ]",
+    delete: "[ OʼCHIRISH ]",
+    del_my_thread: "[ MENING MAVZUMNI OʼCHIRISH ]",
+    locked_thread: "\uD83D\uDD12 MAVZU_YOPILGAN \u2014 yangi javob yozib boʼlmaydi.",
+    login_to_reply: "KIRING",
+    login_to_reply_pre: "\u2192 ",
+    login_to_reply_post: " javob yozish uchun.",
+    reply_title: "// TEZKOR_JAVOB",
+    reply_ph: "// javobingizni yozing\u2026",
+    transmit: "[ YUBORISH ]",
+    transmitting: "[ YUBORILMOQDA\u2026 ]",
+    edit: "[ TAHRIRLASH ]",
+    save: "[ SAQLASH ]",
+    abort: "[ BEKOR ]",
+    cancel: "[ BEKOR ]",
+    theme_dark: "◐ QORA",
+    theme_light: "◑ YORUG'",
+    del_post: "[ OʼCHIRISH ]",
+    op: "MUALL",
+    edited: "(tahrirlangan)",
+    views: "\uD83D\uDC41",
+    n_replies: (n) => `${n} javob`,
+    locked_label: "\uD83D\uDD12 YOPILGAN",
+    pinned_badge: "\u25C8 MAHKAMLANGAN",
+    new_title: "// YANGI_MAVZU",
+    lbl_board: "Boʼlim",
+    lbl_subject: "Sarlavha",
+    lbl_body: "Xabar matni",
+    body_ph: "Xabaringizni yozing\u2026",
+    subject_ph: "Mavzu sarlavhasi\u2026",
+    cpw_title: "// PAROL_OʼZGARTIRISH",
+    lbl_old: "Joriy parol",
+    lbl_new: "Yangi parol",
+    lbl_confirm: "Parolni tasdiqlang",
+    update: "[ YANGILASH ]",
+    auth_title: "// TIZIMGA_KIRISH",
+    tab_login: "KIRISH",
+    tab_reg: "ROʼYXAT",
+    lbl_user: "Foydalanuvchi nomi",
+    lbl_pass: "Parol",
+    lbl_conf: "Parolni tasdiqlang",
+    authenticate: "[ KIRISH ]",
+    register: "[ ROʼYXATDAN OʼTISH ]",
+    adm_stats: "// TIZIM_STATISTIKASI",
+    adm_users: "// FOYDALANUVCHILAR",
+    adm_boards: "// BOʼLIMLAR_BOSHQARUVI",
+    col_id: "#", col_user: "Foydalanuvchi", col_role: "Rol",
+    col_threads: "Mavzular", col_posts: "Postlar",
+    col_joined: "Sana", col_actions: "Amallar",
+    col_slug: "Slug", col_name: "Nomi", col_icon: "Belgi",
+    you: "[siz]",
+    del: "[ OʼCH ]",
+    add_board: "[ + QOʼSHISH ]",
+    slug_ph: "mas. gaming",
+    name_ph: "Boʼlim nomi",
+    lbl_slug: "SLUG", lbl_name: "NOMI", lbl_icon: "BELGI",
+    stat_users: "FOYDALANUVCHI", stat_threads: "MAVZULAR",
+    stat_posts: "POSTLAR", stat_admins: "ADMINLAR", stat_mods: "MODLAR", stat_banned: "BANNED",
+    t_authenticated: (u) => `KIRILDI: ${u}`,
+    t_registered: (u) => `ROʼYXATDAN OʼTILDI: ${u}`,
+    t_logout: "CHIQILDI",
+    t_pw_updated: "PAROL_YANGILANDI",
+    t_thread_posted: "MAVZU_YARATILDI",
+    t_reply_posted: "JAVOB_YUBORILDI",
+    t_thread_deleted: "MAVZU_OʼCHIRILDI",
+    t_post_deleted: "POST_OʼCHIRILDI",
+    t_pinned: "MAVZU_MAHKAMLANDI", t_unpinned: "MAHKAMLASH_OLIB_TASHLANDI",
+    t_locked: "MAVZU_YOPILDI", t_unlocked: "MAVZU_OCHILDI",
+    t_role_set: (r) => `ROL_BELGILANDI: ${r}`,
+    t_user_deleted: (u) => `FOYDALANUVCHI_OʼCHIRILDI: ${u}`,
+    t_board_created: (n) => `BOʼLIM_YARATILDI: ${n}`,
+    t_board_deleted: "BOʼLIM_OʼCHIRILDI",
+    t_admin_req: "ADMIN_HUQUQI_KERAK",
+    t_conn_err: (e) => `ULANISH_XATOSI: ${e}`,
+    e_all_fields: "// BARCHA_MAYDONLARNI_TOʼLDIRING",
+    e_pw_mismatch: "// PAROLLAR_MOS_EMAS",
+    e_pw_short: "// PAROL_JUDA_QISQA (min 6)",
+    e_subject: "// SARLAVHA_KERAK",
+    e_msg_short: "// XABAR_JUDA_QISQA (min 10 ta belgi)",
+    e_reply_empty: "// JAVOB_BOʼSH_BOʼLMAYDI",
+    e_not_logged: "// TIZIMGA_KIRILMAGAN",
+    e_slug_req: "// SLUG_KERAK",
+    e_name_req: "// NOMI_KERAK",
+    c_del_thread: "Bu mavzu va BARCHA postlarini OʼCHIRISH? Qaytarib boʼlmaydi.",
+    c_del_post: "Bu postni OʼCHIRISH?",
+    c_del_user: (u) => `"${u}" foydalanuvchisi va uning barcha kontentini OʼCHIRISH?`,
+    c_del_board: (n) => `"${n}" boʼlimi va BARCHA mavzularini OʼCHIRISH?`,
+    loading: "YUKLANMOQDA\u2026",
+    no_threads_big: "404",
+    err_big: "XATO",
+    search_prefix: "QIDIRUV:",
+  }
+};
+
+let curLang = localStorage.getItem('plovchan_lang') || 'uz';
+function t(key, ...args) {
+  const val = LANGS[curLang]?.[key] ?? LANGS.en[key];
+  if (typeof val === 'function') return val(...args);
+  return val ?? key;
+}
+function setLang(lang) {
+  curLang = lang;
+  localStorage.setItem('plovchan_lang', lang);
+  // Update active button
+  ['en','ru','uz'].forEach(l => {
+    document.getElementById('lb-' + l)?.classList.toggle('active', l === lang);
+  });
+  applyStaticTranslations();
+  // Re-render dynamic parts
+  renderHeader();
+  renderSidebar();
+  // Re-render current view
+  const activeView = document.querySelector('.view.active');
+  if (activeView?.id === 'view-board')  loadBoard();
+  else if (activeView?.id === 'view-thread') loadThread(curThreadId);
+  else if (activeView?.id === 'view-new')    loadNewForm();
+  else if (activeView?.id === 'view-admin')  loadAdmin();
+}
+
+function applyStaticTranslations() {
+  // Nav buttons
+  const hnCpw = document.getElementById('hn-cpw');
+  if (hnCpw) hnCpw.textContent = t('password');
+  const hnAdmin = document.getElementById('hn-admin');
+  if (hnAdmin) hnAdmin.textContent = t('admin');
+  const hnLogout = document.getElementById('hn-logout');
+  if (hnLogout) hnLogout.textContent = t('logout');
+  // Sidebar box titles
+  const sboxTitles = document.querySelectorAll('.sbox-title');
+  if (sboxTitles[0]) sboxTitles[0].textContent = t('s_boards');
+  if (sboxTitles[1]) sboxTitles[1].textContent = t('s_system');
+  // Search placeholder
+  setTxt2('q', 'placeholder', t('search_ph'));
+  // Auth modal
+  setTxt('tab-login', t('tab_login'));
+  setTxt('tab-reg', t('tab_reg'));
+  // New thread form (only if visible)
+  setTxt2('nt-title', 'placeholder', t('subject_ph'));
+  setTxt2('nt-body', 'placeholder', t('body_ph'));
+  setTxt('nt-btn', t('transmit'));
+  // All elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  // Update theme button text for current language
+  applyTheme();
+  // Update login button if not logged in
+  renderHeader();
+}
+function setTxt(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function setTxt2(id, attr, val) { const el = document.getElementById(id); if (el) el[attr] = val; }
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let me = null;
+let cats = [];
+let curCat = 'all';
+let curPage = 1;
+let curSearch = '';
+let curThreadId = null;
+
+// ═══════════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = { method, credentials: 'include', headers: {} };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  let res, data;
+  try {
+    res  = await fetch('/api' + path, opts);
+    data = await res.json();
+  } catch(e) { throw new Error('NETWORK_ERROR — server offline?'); }
+  if (res.status === 429) throw new Error(data.error || 'Too many requests — slow down!');
+  if (!res.ok) throw new Error(data.error || `HTTP_${res.status}`);
+  return data;
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  IMAGE UPLOAD HELPERS
+// ═══════════════════════════════════════════════════
+async function handleImgSelect(input, previewId, urlId, statusId) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Show uploading status
+  const statusEl  = document.getElementById(statusId);
+  const previewEl = document.getElementById(previewId);
+  statusEl.style.display = '';
+  previewEl.style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res  = await fetch('/api/upload', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+    // Show preview
+    document.getElementById(urlId).value = data.url;
+    previewEl.querySelector('img').src = data.url;
+    previewEl.style.display = '';
+    statusEl.style.display  = 'none';
+    toast(`// IMG_UPLOADED (${(data.size/1024).toFixed(0)}KB WebP)`);
+  } catch(e) {
+    statusEl.style.display = 'none';
+    toast('// UPLOAD_ERROR: ' + e.message, true);
+    input.value = '';
+  }
+}
+
+function removeImg(previewId, urlId, fileId, statusId) {
+  document.getElementById(previewId).style.display = 'none';
+  document.getElementById(previewId).querySelector('img').src = '';
+  document.getElementById(urlId).value = '';
+  document.getElementById(fileId).value = '';
+  document.getElementById(statusId).style.display = 'none';
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+  document.body.style.overflow = '';
+}
+// Close lightbox on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+async function init() {
+  startClock();
+  // Apply saved language immediately
+  document.getElementById('lb-' + curLang)?.classList.add('active');
+  ['en','ru','uz'].filter(l => l !== curLang).forEach(l => document.getElementById('lb-' + l)?.classList.remove('active'));
+  try {
+    const [meRes, catsRes] = await Promise.all([
+      api('GET', '/auth/me'),
+      api('GET', '/categories')
+    ]);
+    me   = meRes.user;
+    cats = catsRes;
+  } catch(e) {
+    console.error('[init] API error:', e.message);
+    toast(t('t_conn_err', e.message), true);
+  }
+  console.log('[init] cats:', cats.length, '| me:', me);
+  renderHeader();
+  renderSidebar();
+  applyStaticTranslations();
+  nav('board');
+}
+
+function startClock() {
+  const el = document.getElementById('clock');
+  function tick() { el.textContent = new Date().toTimeString().slice(0, 8); }
+  tick(); setInterval(tick, 1000);
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════
+function nav(view, extra) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (!el) return;
+  el.classList.add('active');
+  if (view !== 'thread') stopAutoRefresh();
+  if (view === 'board')     loadBoard();
+  if (view === 'new')       { if (!me) { openAuth(); return; } loadNewForm(); }
+  if (view === 'thread')    loadThread(extra || curThreadId);
+  if (view === 'profile')   loadProfile(extra);
+  if (view === 'bookmarks') { if (!me) { openAuth(); return; } loadBookmarks(); }
+  if (view === 'events')    { loadEvents(); }
+  if (view === 'admin')  {
+    if (!['admin','moderator'].includes(me?.role)) { toast(t('t_admin_req'), true); nav('board'); return; }
+    loadAdmin();
+  }
+}
+
+function goHome() { curCat = 'all'; curPage = 1; curSearch = ''; document.getElementById('q').value = ''; closeMobileSidebar(); nav('board'); }
+function goBack() { nav('board'); }
+
+// ─── Mobile sidebar ───
+function toggleMobileSidebar() {
+  const overlay = document.getElementById('mobile-sidebar-overlay');
+  const sidebar = document.getElementById('mobile-sidebar');
+  const isOpen = sidebar.style.display === 'block';
+  if (isOpen) { closeMobileSidebar(); }
+  else {
+    overlay.style.display = 'block';
+    sidebar.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeMobileSidebar() {
+  document.getElementById('mobile-sidebar-overlay').style.display = 'none';
+  document.getElementById('mobile-sidebar').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function renderMobileSidebar() {
+  const ml = document.getElementById('mobile-cat-list');
+  const ms = document.getElementById('mobile-slinks');
+  if (!ml || !ms) return;
+  const total = cats.reduce((a, c) => a + (c.thread_count || 0), 0);
+  ml.innerHTML = `
+    <div class="cat-item${curCat === 'all' ? ' active' : ''}" onclick="setCatMobile('all')">
+      <span>${t('s_all')}</span><span class="cat-cnt">${total}</span>
+    </div>` +
+    cats.map(c => `
+    <div class="cat-item${curCat === c.slug ? ' active' : ''}" onclick="setCatMobile('${esc(c.slug)}')">
+      <span>[${esc(c.icon)}] ${esc(catName(c))}</span><span class="cat-cnt">${c.thread_count || 0}</span>
+    </div>`).join('');
+  if (me) {
+    ms.innerHTML = `
+      <div class="slink" onclick="closeMobileSidebar();nav('profile',me.username)">[ 👤 PROFILE ]</div>
+      <div class="slink" onclick="closeMobileSidebar();nav('bookmarks')">[ 📌 BOOKMARKS ]</div>
+      ${(me.role === 'admin' || me.role === 'moderator') ? `<div class="slink hilite" onclick="closeMobileSidebar();nav('admin')">${me.role === 'admin' ? t('s_admin') : '[ ★ MOD ]'}</div>` : ''}
+      <div class="slink" onclick="closeMobileSidebar();nav('cpw')">${t('s_changepw')}</div>
+      <div class="slink pink" onclick="closeMobileSidebar();doLogout()">${t('s_logout')}</div>`;
+  } else {
+    ms.innerHTML = `<div class="slink" onclick="closeMobileSidebar();openAuth()">${t('s_login')}</div>`;
+  }
+}
+function setCatMobile(slug) {
+  closeMobileSidebar();
+  setCat(slug);
+}
+function startNewThread() {
+  if (!me) { openAuth(); return; }
+  const catObj = cats.find(c => c.slug === curCat);
+  if (catObj?.admin_only && me.role !== 'admin') {
+    toast('// ADMIN_ONLY_BOARD', true); return;
+  }
+  nav('new');
+}
+
+// ═══════════════════════════════════════════════════
+//  HEADER & SIDEBAR
+// ═══════════════════════════════════════════════════
+function renderHeader() {
+  const el = document.getElementById('huser');
+  if (me) {
+    el.innerHTML = `<div class="user-chip"><span class="uname">${esc(me.username)}</span><span class="rbadge ${me.role}">${me.role}</span></div>`;
+  } else {
+    el.innerHTML = `<span style="font-size:11px;color:var(--cyan-dim);cursor:pointer;font-family:'JetBrains Mono'" onclick="openAuth()">${t('login_btn')}</span>`;
+  }
+  show('hn-cpw',    !!me);
+  show('hn-admin',  me?.role === 'admin' || me?.role === 'moderator');
+  show('hn-logout', !!me);
+}
+
+// Returns the localized category name based on current language
+function catName(c) {
+  if (curLang === 'ru' && c.name_ru) return c.name_ru;
+  if (curLang === 'uz' && c.name_uz) return c.name_uz;
+  return c.name;
+}
+// Same but for thread objects (cat_name_ru / cat_name_uz fields)
+function threadCatName(th) {
+  if (curLang === 'ru' && th.cat_name_ru) return th.cat_name_ru;
+  if (curLang === 'uz' && th.cat_name_uz) return th.cat_name_uz;
+  return th.cat_name;
+}
+
+function renderSidebar() {
+  const list = document.getElementById('cat-list');
+  const total = cats.reduce((a, c) => a + (c.thread_count || 0), 0);
+  const totalPosts = cats.reduce((a, c) => a + (c.post_count || 0), 0);
+  document.getElementById('sb-boards').textContent  = `${t('sb_boards')}: ${cats.length}`;
+  document.getElementById('sb-threads').textContent = `${t('sb_threads')}: ${total}`;
+  document.getElementById('sb-posts').textContent   = `${t('sb_posts')}: ${totalPosts}`;
+
+  list.innerHTML = `
+    <div class="cat-item${curCat === 'all' ? ' active' : ''}" onclick="setCat('all')">
+      <span>${t('s_all')}</span><span class="cat-cnt">${total}</span>
+    </div>` +
+    cats.map(c => `
+    <div class="cat-item${curCat === c.slug ? ' active' : ''}" onclick="setCat('${esc(c.slug)}')">
+      <span>[${esc(c.icon)}] ${esc(catName(c))}${c.admin_only ? ' <span style="color:var(--pink);font-size:9px">★</span>' : ''}</span><span class="cat-cnt">${c.thread_count || 0}</span>
+    </div>`).join('');
+
+  const sl = document.getElementById('slinks');
+  if (me) {
+    sl.innerHTML = `
+      <div class="slink" onclick="nav('profile',me.username)">[ 👤 PROFILE ]</div>
+      <div class="slink" onclick="nav('bookmarks')">[ 📌 BOOKMARKS ]</div>
+      ${(me.role === 'admin' || me.role === 'moderator') ? `<div class="slink hilite" onclick="nav('admin')">${me.role === 'admin' ? t('s_admin') : '[ ★ MOD_PANEL ]'}</div>` : ''}
+      <div class="slink" onclick="nav('cpw')">${t('s_changepw')}</div>
+      <div class="slink pink" onclick="doLogout()">${t('s_logout')}</div>`;
+  } else {
+    sl.innerHTML = `<div class="slink" onclick="openAuth()">${t('s_login')}</div>`;
+  }
+  renderMobileSidebar();
+}
+
+function setCat(slug) {
+  curCat = slug; curPage = 1; curSearch = '';
+  document.getElementById('q').value = '';
+  renderSidebar(); nav('board');
+}
+
+// ═══════════════════════════════════════════════════
+//  BOARD
+// ═══════════════════════════════════════════════════
+async function loadBoard() {
+  const listEl  = document.getElementById('thread-list');
+  const titleEl = document.getElementById('board-title');
+  const countEl = document.getElementById('board-count');
+  const pagerEl = document.getElementById('pager');
+
+  console.log('[loadBoard] start, cats:', cats.length, 'curCat:', curCat);
+  listEl.innerHTML = skeletonCards(5);
+
+  try {
+    let url = `/threads?page=${curPage}&limit=25`;
+    if (curCat !== 'all') url += `&cat=${encodeURIComponent(curCat)}`;
+    if (curSearch)        url += `&search=${encodeURIComponent(curSearch)}`;
+
+    const res = await api('GET', url);
+    const catObj = cats.find(c => c.slug === curCat);
+    const isAdminOnly = catObj?.admin_only;
+    const canPost = !isAdminOnly || me?.role === 'admin';
+
+    // Show/hide new thread button
+    const ntBtn = document.querySelector('[data-i18n="new_thread"]');
+    if (ntBtn) {
+      ntBtn.style.display = canPost ? '' : 'none';
+    }
+
+    titleEl.textContent = curSearch
+      ? `${t('search_prefix')} "${curSearch}"`
+      : (catObj ? catName(catObj).toUpperCase().replace(/ /g, '_') : t('all_boards'));
+    countEl.textContent = t('n_threads', res.total);
+
+    if (!res.threads.length) {
+      listEl.innerHTML = `<div class="empty">
+        <div class="ebig">${curSearch ? '⌕' : '—'}</div>
+        <div style="margin-bottom:12px">${t('no_threads')}</div>
+        ${canPost && !curSearch ? `<button class="btn btn-cyan" onclick="startNewThread()">${t('new_thread')}</button>` : ''}
+        ${curSearch ? `<button class="btn btn-ghost" onclick="clearSearch()" style="margin-top:4px">[ CLEAR SEARCH ]</button>` : ''}
+      </div>`;
+      pagerEl.innerHTML = '';
+      return;
+    }
+
+    listEl.innerHTML = res.threads.map((th, i) => `
+      <div class="tcard${th.pinned ? ' pinned' : ''}${th.locked ? ' locked' : ''}"
+           style="animation-delay:${i * .025}s" onclick="openThread(${th.id})">
+        <div>
+          <div class="ttitle">${esc(th.title)}${th.pinned ? ` <span class="tpin-badge">${t('pinned_badge')}</span>` : ''}</div>
+          <div class="tmeta">
+            <span class="tauthor">${th.is_anonymous ? 'Anonymous' : esc(th.author)}</span>
+            <span class="tcat-tag">${esc(threadCatName(th))}</span>
+            <span>${timeAgo(th.created_at)}</span>
+            <span>👁 ${th.views}</span>
+            ${th.last_post_user && th.reply_count > 0 ? `<span>${t('last')}: <span class="tauthor">${esc(th.last_post_user)}</span> ${timeAgo(th.last_post_at)}</span>` : ''}
+          </div>
+        </div>
+        <div class="tstats">
+          <div class="rnum">${th.reply_count}</div>
+          <div class="rlabel">${t('replies')}</div>
+        </div>
+      </div>`).join('');
+
+    // Pagination
+    if (res.pages > 1) {
+      let html = '';
+      if (curPage > 1) html += `<button class="pager-btn" onclick="gotoPage(${curPage - 1})">◄</button>`;
+      for (let i = 1; i <= res.pages; i++) {
+        if (i === 1 || i === res.pages || Math.abs(i - curPage) <= 2)
+          html += `<button class="pager-btn${i === curPage ? ' active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+        else if (Math.abs(i - curPage) === 3)
+          html += `<span style="color:var(--text-dim);padding:0 4px">…</span>`;
+      }
+      if (curPage < res.pages) html += `<button class="pager-btn" onclick="gotoPage(${curPage + 1})">►</button>`;
+      pagerEl.innerHTML = html;
+    } else { pagerEl.innerHTML = ''; }
+
+  } catch(e) {
+    console.error('[loadBoard] ERROR:', e.message, e.stack);
+    listEl.innerHTML = `<div class="empty"><div class="ebig">${t('err_big')}</div><div>${esc(e.message)}</div></div>`;
+  }
+}
+
+function gotoPage(p) { curPage = p; nav('board'); window.scrollTo(0, 0); }
+let _searchTimer = null;
+function doSearch() { curSearch = document.getElementById('q').value.trim(); curPage = 1; nav('board'); }
+function doSearchDebounced() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(doSearch, 350);
+}
+function openThread(id) { curThreadId = id; nav('thread', id); }
+
+// ═══════════════════════════════════════════════════
+//  THREAD DETAIL
+// ═══════════════════════════════════════════════════
+async function loadThread(id) {
+  const el = document.getElementById('thread-detail');
+  el.innerHTML = `<div class="empty"><span class="spinner"></span>LOADING…</div>`;
+  try {
+    const { thread, posts, bookmarked } = await api('GET', `/threads/${id}`);
+    await loadVotes(id);
+    lastPostCount = posts.length;
+    startAutoRefresh(id);
+    const isAdmin = me?.role === 'admin';
+    const isMod   = me?.role === 'moderator';
+    const isOwner = me?.id   === thread.user_id;
+
+    let hdrActions = `<button id="bm-btn" class="bookmark-btn${bookmarked ? ' active' : ''}" onclick="toggleBookmark(${thread.id})">${bookmarked ? '[ 📌 SAVED ]' : '[ 📌 SAVE ]'}</button> `;
+    if (isAdmin) {
+      hdrActions = `
+        <button class="btn btn-pink btn-sm" onclick="togglePin(${thread.id},${thread.pinned})">${thread.pinned ? t('unpin') : t('pin')}</button>
+        <button class="btn btn-pink btn-sm" onclick="toggleLock(${thread.id},${thread.locked})">${thread.locked ? t('unlock') : t('lock')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteThread(${thread.id})">${t('delete')}</button>`;
+    } else if (isMod) {
+      hdrActions = `
+        <button class="btn btn-pink btn-sm" onclick="toggleLock(${thread.id},${thread.locked})">${thread.locked ? t('unlock') : t('lock')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteThread(${thread.id})">${t('delete')}</button>`;
+    } else if (isOwner) {
+      hdrActions = `<button class="btn btn-danger btn-sm" onclick="deleteThread(${thread.id})">${t('del_my_thread')}</button>`;
+    }
+
+    const allPosts = [
+      { id: null, author: thread.author, author_role: 'member', author_avatar: thread.author_avatar || '',
+        body: thread.body, image: thread.image || '',
+        created_at: thread.created_at, updated_at: thread.updated_at,
+        user_id: thread.user_id, isOP: true, is_anonymous: thread.is_anonymous },
+      ...posts
+    ];
+
+    const postsHtml = allPosts.map((p, i) => {
+      const canEdit   = me && (me.id === p.user_id || isAdmin) && !p.isOP;
+      const canDelete = me && (me.id === p.user_id || isAdmin || isMod) && !p.isOP;
+      const edited    = p.updated_at && p.updated_at !== p.created_at;
+      const pAuthorName = p.is_anonymous ? 'Anonymous' : p.author;
+      const pAuthorAvatarInner = p.is_anonymous ? '?' : (p.author_avatar ? `<img src="${esc(p.author_avatar)}">` : p.author[0].toUpperCase());
+      const pAuthorRole = p.is_anonymous ? 'member' : p.author_role;
+      const onProfileClick = p.is_anonymous ? '' : ` onclick="event.stopPropagation();nav('profile','${esc(p.author)}')"`;
+
+      return `<div class="pcard${p.isOP ? ' op-post' : ''}" id="pcard-${p.id || 'op'}">
+        <div class="pauthor">
+          <div class="pavatar${pAuthorRole === 'admin' ? ' admin-av' : pAuthorRole === 'moderator' ? ' mod-av' : ''}">${pAuthorAvatarInner}</div>
+          <div class="pname" style="cursor:${p.is_anonymous?'default':'pointer'}"${onProfileClick}>${esc(pAuthorName)}</div>
+          <span class="prole ${pAuthorRole || 'member'}">${p.isOP ? t('op') : pAuthorRole || 'member'}</span>
+          <div class="pnum" style="cursor:pointer" onclick="document.getElementById('pcard-${p.id||'op'}').scrollIntoView({behavior:'smooth',block:'start'})" title="Link to post">#${i + 1}</div>
+        </div>
+        <div class="pcontent">
+          <div class="pts">${fmtDate(p.created_at)}${edited ? ` <em style="opacity:.5">${t('edited')}</em>` : ''}</div>
+          <div class="pbody md-rendered" id="pbody-${p.id || 'op'}">${renderMarkdown(p.body)}</div>
+          ${p.image ? `<img class="post-img" src="${esc(p.image)}" alt="" onclick="openLightbox('${esc(p.image)}')">` : ''}
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            ${!p.isOP && p.id ? voteHtml(p.id) : ''}
+            ${canEdit || canDelete ? `<div class="pactions" style="border:none;margin:0;padding:0">
+              ${canEdit   ? `<button class="btn btn-ghost btn-sm" onclick="editPost(${p.id})">${t('edit')}</button>` : ''}
+              ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deletePost(${p.id},${thread.id})">${t('del_post')}</button>` : ''}
+            </div>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    let replyBox = '';
+    if (!me) {
+      replyBox = `<div class="locked-msg">${t('login_to_reply_pre')}<button class="btn-link" onclick="openAuth()">${t('login_to_reply')}</button>${t('login_to_reply_post')}</div>`;
+    } else if (thread.locked && !isAdmin) {
+      replyBox = `<div class="locked-msg">${t('locked_thread')}</div>`;
+    } else {
+      replyBox = `<div class="reply-box">
+        <div class="reply-title"><span class="refresh-dot"></span>${t('reply_title')}</div>
+        ${mdToolbarHtml('rb')}
+        <div class="frow"><textarea id="rb" rows="5" placeholder="${t('reply_ph')}"></textarea></div>
+        <div class="img-upload-area">
+          <label class="img-upload-btn">
+            <span>📎 ${t('attach_img') || 'ATTACH IMAGE'}</span>
+            <input type="file" id="rb-img-file" accept="image/*" onchange="handleImgSelect(this,'rb-img-preview','rb-img-url','rb-img-status')">
+          </label>
+          <span class="img-uploading" id="rb-img-status" style="display:none">UPLOADING…</span>
+          <div class="img-preview-wrap" id="rb-img-preview" style="display:none">
+            <img class="img-preview" src="" alt="">
+            <button class="img-remove" onclick="removeImg('rb-img-preview','rb-img-url','rb-img-file','rb-img-status')">✕</button>
+          </div>
+          <input type="hidden" id="rb-img-url" value="">
+        </div>
+        <div class="frow" style="margin-top:10px;">
+          <label style="color:var(--text-dim);display:flex;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="rb-anon" style="width:auto;margin-right:8px;accent-color:var(--cyan)">
+            <span style="font-size:12px;text-transform:none">Post Anonymously</span>
+          </label>
+        </div>
+        <div class="ferr" id="rb-err"></div>
+        <div class="factions">
+          <button class="btn btn-cyan" id="rb-btn" onclick="submitReply(${thread.id})">${t('transmit')}</button>
+        </div>
+      </div>`;
+    }
+
+    el.innerHTML = `
+      <div class="breadcrumb">
+        <span onclick="goHome()">${t('all_boards')}</span>
+        <span class="sep">›</span>
+        <span onclick="setCat('${esc(thread.cat_slug)}')">${esc(threadCatName(thread))}</span>
+        <span class="sep">›</span>
+        <span class="current">${esc(thread.title).slice(0,50)}${thread.title.length > 50 ? '…' : ''}</span>
+      </div>
+      <div class="thead-card">
+        <div class="thead-headline">${esc(thread.title)}</div>
+        <div class="thead-meta">
+          <span class="tcat-tag">${esc(threadCatName(thread))}</span>
+          <span>by <span class="author" style="cursor:${thread.is_anonymous?'default':'pointer'}"${thread.is_anonymous?'':` onclick="nav('profile','${esc(thread.author)}')" `}>${thread.is_anonymous?'Anonymous':esc(thread.author)}</span></span>
+          <span>${fmtDate(thread.created_at)}</span>
+          <span>${posts.length} ${t('n_replies', posts.length).replace(/^\d+ /, '')}</span>
+          <span>👁 ${thread.views}</span>
+          ${thread.locked ? `<span style="color:var(--yellow)">${t('locked_label')}</span>` : ''}
+        </div>
+        ${hdrActions ? `<div class="thead-actions">${hdrActions}</div>` : ''}
+      </div>
+      <div class="post-list">${postsHtml}</div>
+      ${replyBox}`;
+
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><div class="ebig">ERR</div><div>${esc(e.message)}</div></div>`;
+  }
+}
+
+async function submitReply(threadId) {
+  const body   = document.getElementById('rb').value.trim();
+  const image  = document.getElementById('rb-img-url')?.value || '';
+  const is_anonymous = document.getElementById('rb-anon')?.checked || false;
+  const errEl  = document.getElementById('rb-err');
+  const btn    = document.getElementById('rb-btn');
+  errEl.textContent = '';
+  if (!body && !image) { errEl.textContent = t('e_reply_empty'); return; }
+  btn.disabled = true; btn.textContent = t('transmitting');
+  try {
+    await api('POST', '/posts', { thread_id: threadId, body: body||'.', image, is_anonymous });
+    toast(t('t_reply_posted'));
+    await loadThread(threadId);
+    // Scroll to last post smoothly
+    setTimeout(() => {
+      const posts = document.querySelectorAll('.pcard');
+      const last = posts[posts.length - 1];
+      if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  } catch(e) {
+    errEl.textContent = '// ' + e.message;
+    btn.disabled = false; btn.textContent = t('transmit');
+  }
+}
+
+async function editPost(id) {
+  const bodyEl   = document.getElementById(`pbody-${id}`);
+  const pcardEl  = document.getElementById(`pcard-${id}`);
+  const origText = bodyEl.innerText;
+  // Find existing image src from the post card
+  const existingImg = pcardEl?.querySelector('.post-img')?.src || '';
+  const relImg = existingImg ? existingImg.replace(window.location.origin, '') : '';
+
+  bodyEl.innerHTML = `
+    <textarea id="edit-ta-${id}" style="width:100%;min-height:90px;margin-bottom:6px">${esc(origText)}</textarea>
+    <div class="img-upload-area" style="margin-bottom:6px">
+      <div id="edit-img-current-${id}" style="${relImg ? '' : 'display:none'}">
+        <div style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-bottom:4px">CURRENT IMAGE:</div>
+        <div class="img-preview-wrap">
+          <img class="img-preview" src="${esc(relImg)}" alt="">
+          <button class="img-remove" onclick="editRemoveCurrentImg(${id})">✕</button>
+        </div>
+      </div>
+      <label class="img-upload-btn" id="edit-img-add-${id}" style="${relImg ? 'display:none' : ''}">
+        <span>📎 ATTACH IMAGE</span>
+        <input type="file" accept="image/*" onchange="handleImgSelect(this,'edit-img-preview-${id}','edit-img-url-${id}','edit-img-status-${id}')">
+      </label>
+      <span class="img-uploading" id="edit-img-status-${id}" style="display:none">UPLOADING…</span>
+      <div class="img-preview-wrap" id="edit-img-preview-${id}" style="display:none">
+        <img class="img-preview" src="" alt="">
+        <button class="img-remove" onclick="editRemoveNewImg(${id})">✕</button>
+      </div>
+      <input type="hidden" id="edit-img-url-${id}" value="${esc(relImg)}">
+    </div>
+    <div class="factions">
+      <button class="btn btn-cyan btn-sm" onclick="savePost(${id})">${t('save')}</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadThread(${curThreadId})">${t('abort')}</button>
+    </div>`;
+  bodyEl.querySelector('textarea').focus();
+}
+
+function editRemoveCurrentImg(id) {
+  document.getElementById(`edit-img-current-${id}`).style.display = 'none';
+  document.getElementById(`edit-img-url-${id}`).value = '';
+  document.getElementById(`edit-img-add-${id}`).style.display = '';
+}
+
+function editRemoveNewImg(id) {
+  document.getElementById(`edit-img-preview-${id}`).style.display = 'none';
+  document.getElementById(`edit-img-preview-${id}`).querySelector('img').src = '';
+  document.getElementById(`edit-img-url-${id}`).value = '';
+  document.getElementById(`edit-img-add-${id}`).style.display = '';
+}
+
+async function savePost(id) {
+  const ta    = document.getElementById(`edit-ta-${id}`);
+  const imgEl = document.getElementById(`edit-img-url-${id}`);
+  if (!ta) return;
+  try {
+    await api('PUT', `/posts/${id}`, { body: ta.value, image: imgEl?.value || '' });
+    await loadThread(curThreadId);
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+async function deletePost(id, threadId) {
+  if (!confirm(t('c_del_post'))) return;
+  try {
+    await api('DELETE', `/posts/${id}`);
+    await loadThread(threadId);
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+async function togglePin(id, pinned) {
+  try { await api('POST', `/threads/${id}/pin`); await loadThread(id); toast(pinned ? t('t_unpinned') : t('t_pinned')); }
+  catch(e) { toast('// ' + e.message, true); }
+}
+async function toggleLock(id, locked) {
+  try { await api('POST', `/threads/${id}/lock`); await loadThread(id); toast(locked ? t('t_unlocked') : t('t_locked')); }
+  catch(e) { toast('// ' + e.message, true); }
+}
+async function deleteThread(id) {
+  if (!confirm(t('c_del_thread'))) return;
+  try {
+    await api('DELETE', `/threads/${id}`);
+    cats = await api('GET', '/categories');
+    renderSidebar();
+    toast(t('t_thread_deleted'));
+    nav('board');
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════
+//  NEW THREAD
+// ═══════════════════════════════════════════════════
+function loadNewForm() {
+  const sel = document.getElementById('nt-cat');
+  const visibleCats = me?.role === 'admin' ? cats : cats.filter(c => !c.admin_only);
+  sel.innerHTML = visibleCats.map(c => `<option value="${esc(c.slug)}">${esc(catName(c))}</option>`).join('');
+  if (curCat !== 'all' && visibleCats.find(c => c.slug === curCat)) sel.value = curCat;
+  document.getElementById('nt-err').textContent = '';
+}
+
+async function submitThread() {
+  const title  = document.getElementById('nt-title').value.trim();
+  const body   = document.getElementById('nt-body').value.trim();
+  const cat    = document.getElementById('nt-cat').value;
+  const image  = document.getElementById('nt-img-url').value || '';
+  const is_anonymous = document.getElementById('nt-anon')?.checked || false;
+  const errEl  = document.getElementById('nt-err');
+  const btn    = document.getElementById('nt-btn');
+  errEl.textContent = '';
+  if (!title) { errEl.textContent = t('e_subject'); return; }
+  if (body.length < 10) { errEl.textContent = t('e_msg_short'); return; }
+  btn.disabled = true; btn.textContent = t('transmitting');
+  try {
+    const thread = await api('POST', '/threads', { cat_slug: cat, title, body, image, is_anonymous });
+    document.getElementById('nt-title').value = '';
+    document.getElementById('nt-body').value  = '';
+    document.getElementById('nt-img-url').value = '';
+    document.getElementById('nt-img-preview').style.display = 'none';
+    cats = await api('GET', '/categories');
+    renderSidebar();
+    toast(t('t_thread_posted'));
+    openThread(thread.id);
+  } catch(e) {
+    errEl.textContent = '// ' + e.message;
+    btn.disabled = false; btn.textContent = t('transmit');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+function openAuth()  { document.getElementById('auth-overlay').classList.add('open'); }
+function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+
+function switchTab(tab) {
+  ['login', 'reg'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('p-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+async function doLogin() {
+  const errEl    = document.getElementById('l-err');
+  const btn      = document.getElementById('l-btn');
+  const username = document.getElementById('l-u').value.trim();
+  const password = document.getElementById('l-p').value;
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent = t('e_all_fields'); return; }
+  btn.disabled = true; btn.textContent = '[ … ]';
+  try {
+    const { user } = await api('POST', '/auth/login', { username, password });
+    me = user;
+    closeAuth();
+    renderHeader(); renderSidebar();
+    document.getElementById('l-p').value = '';
+    toast(t('t_authenticated', user.username));
+    if (document.getElementById('view-board').classList.contains('active')) loadBoard();
+    else if (curThreadId && document.getElementById('view-thread').classList.contains('active')) loadThread(curThreadId);
+  } catch(e) {
+    errEl.textContent = '// ' + e.message;
+    btn.disabled = false; btn.textContent = t('authenticate');
+  }
+}
+
+async function doRegister() {
+  const errEl    = document.getElementById('r-err');
+  const btn      = document.getElementById('r-btn');
+  const username = document.getElementById('r-u').value.trim();
+  const pass     = document.getElementById('r-p').value;
+  const pass2    = document.getElementById('r-p2').value;
+  errEl.textContent = '';
+  if (!username || !pass) { errEl.textContent = t('e_all_fields'); return; }
+  if (pass !== pass2)     { errEl.textContent = t('e_pw_mismatch'); return; }
+  btn.disabled = true; btn.textContent = '[ … ]';
+  try {
+    const { user } = await api('POST', '/auth/register', { username, password: pass });
+    me = user;
+    closeAuth();
+    renderHeader(); renderSidebar();
+    document.getElementById('r-p').value  = '';
+    document.getElementById('r-p2').value = '';
+    toast(t('t_registered', user.username));
+    if (document.getElementById('view-board').classList.contains('active')) loadBoard();
+  } catch(e) {
+    errEl.textContent = '// ' + e.message;
+    btn.disabled = false; btn.textContent = t('register');
+  }
+}
+
+async function doLogout() {
+  try {
+    await api('POST', '/auth/logout');
+    me = null;
+    renderHeader(); renderSidebar();
+    toast(t('t_logout'));
+    nav('board');
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+async function submitCpw() {
+  const errEl = document.getElementById('cpw-err');
+  errEl.textContent = '';
+  if (!me) { errEl.textContent = t('e_not_logged'); return; }
+  const old  = document.getElementById('cpw-old').value;
+  const nw   = document.getElementById('cpw-new').value;
+  const conf = document.getElementById('cpw-c').value;
+  if (!old || !nw) { errEl.textContent = t('e_all_fields'); return; }
+  if (nw !== conf) { errEl.textContent = t('e_pw_mismatch'); return; }
+  if (nw.length < 6) { errEl.textContent = '// PASSWORD_TOO_SHORT (min 6)'; return; }
+  try {
+    await api('POST', '/auth/change-password', { oldPassword: old, newPassword: nw });
+    ['cpw-old', 'cpw-new', 'cpw-c'].forEach(id => document.getElementById(id).value = '');
+    toast(t('t_pw_updated'));
+    nav('board');
+  } catch(e) { errEl.textContent = '// ' + e.message; }
+}
+
+// ═══════════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════════
+async function loadAdmin() {
+  const el = document.getElementById('admin-panel');
+  el.innerHTML = `<div class="empty"><span class="spinner"></span>LOADING…</div>`;
+  try {
+    const isAdmin = me?.role === 'admin';
+    const requests = isAdmin
+      ? [api('GET', '/admin/stats'), api('GET', '/admin/users')]
+      : [Promise.resolve(null),      api('GET', '/admin/users')];
+    const [stats, users] = await Promise.all(requests);
+
+    let html = `<div style="display:flex;flex-direction:column;gap:12px;">`;
+
+    // Stats — admin only
+    if (isAdmin && stats) {
+      html += `
+      <div class="asect">
+        <div class="asect-title">${t('adm_stats')}</div>
+        <div class="asect-body">
+          <div class="sgrid">
+            <div class="scard"><div class="snum">${stats.users}</div><div class="slabel">${t('stat_users')}</div></div>
+            <div class="scard"><div class="snum">${stats.threads}</div><div class="slabel">${t('stat_threads')}</div></div>
+            <div class="scard"><div class="snum">${stats.posts}</div><div class="slabel">${t('stat_posts')}</div></div>
+            <div class="scard"><div class="snum" style="color:var(--pink);text-shadow:var(--glow-pink)">${stats.admins}</div><div class="slabel">${t('stat_admins')}</div></div>
+            <div class="scard"><div class="snum" style="color:var(--yellow)">${stats.mods||0}</div><div class="slabel">${t('stat_mods')}</div></div>
+            <div class="scard"><div class="snum" style="color:#ff4444">${stats.banned}</div><div class="slabel">${t('stat_banned')}</div></div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // User management
+    html += `
+      <div class="asect">
+        <div class="asect-title">${t('adm_users')}</div>
+        <div class="asect-body">
+          <div style="margin-bottom:10px;display:flex;gap:6px;align-items:center;">
+            <input type="text" id="usr-search" placeholder="Search username…"
+              style="width:200px;padding:5px 9px;font-size:11px;"
+              oninput="filterUsers()">
+            <span style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono'" id="usr-count">${users.length} users</span>
+          </div>
+          <div style="overflow-x:auto;">
+          <table class="atable" id="usr-table">
+            <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Threads</th><th>Posts</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="usr-tbody">
+              ${renderUserRows(users, isAdmin)}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>`;
+
+    // Board management — admin only
+    if (isAdmin) {
+      html += `
+      <div class="asect">
+        <div class="asect-title">${t('adm_boards')}</div>
+        <div class="asect-body">
+          <table class="atable" style="margin-bottom:12px">
+            <thead><tr><th>Slug</th><th>EN</th><th>RU</th><th>UZ</th><th>Icon</th><th>Admin only</th><th>Threads</th><th></th></tr></thead>
+            <tbody>${cats.map(c => `
+              <tr>
+                <td style="color:var(--text-dim)">${esc(c.slug)}</td>
+                <td>${esc(c.name)}</td>
+                <td style="color:var(--text-dim)">${esc(c.name_ru||'—')}</td>
+                <td style="color:var(--text-dim)">${esc(c.name_uz||'—')}</td>
+                <td style="color:var(--cyan-dim)">${esc(c.icon)}</td>
+                <td>
+                  <button class="btn btn-sm ${c.admin_only ? 'btn-pink' : 'btn-ghost'}"
+                    onclick="toggleAdminOnly(${c.id},${c.admin_only})">
+                    ${c.admin_only ? '[ ★ ON ]' : '[ OFF ]'}
+                  </button>
+                </td>
+                <td>${c.thread_count || 0}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteCat(${c.id},'${esc(c.name)}')">[ DEL ]</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="background:var(--bg3);border:1px solid var(--border-bright);border-left:2px solid var(--pink);padding:12px;display:flex;flex-direction:column;gap:8px;">
+            <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--pink-dim);letter-spacing:2px;">// NEW_BOARD</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <div>
+                <div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;font-family:'JetBrains Mono'">SLUG</div>
+                <input type="text" id="nc-slug" placeholder="e.g. gaming" style="width:110px">
+              </div>
+              <div>
+                <div style="font-size:9px;color:var(--cyan);margin-bottom:3px;font-family:'JetBrains Mono'">NAME [EN]</div>
+                <input type="text" id="nc-name" placeholder="General" style="width:120px">
+              </div>
+              <div>
+                <div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;font-family:'JetBrains Mono'">NAME [RU]</div>
+                <input type="text" id="nc-name-ru" placeholder="Общее" style="width:120px">
+              </div>
+              <div>
+                <div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;font-family:'JetBrains Mono'">NAME [UZ]</div>
+                <input type="text" id="nc-name-uz" placeholder="Umumiy" style="width:120px">
+              </div>
+              <div>
+                <div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;font-family:'JetBrains Mono'">ICON</div>
+                <input type="text" id="nc-icon" placeholder="GEN" style="width:56px" maxlength="5">
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:8px;">
+                <label style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);cursor:pointer;padding-bottom:8px;">
+                  <input type="checkbox" id="nc-admin-only" style="width:auto;accent-color:var(--pink)">
+                  <span style="color:var(--pink)">ADMIN_ONLY</span>
+                </label>
+                <button class="btn btn-pink" onclick="addBoard()">[ + ADD_BOARD ]</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Banned words — admin only
+    if (isAdmin) {
+      const bwords = await api('GET', '/banned-words');
+      html += `
+      <div class="asect">
+        <div class="asect-title">// BANNED_WORDS</div>
+        <div class="asect-body">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="bw-list">
+            ${bwords.length === 0
+              ? `<span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px">— no banned words —</span>`
+              : bwords.map(w => `
+                <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,0,110,.08);border:1px solid rgba(255,0,110,.25);padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--pink);">
+                  ${esc(w.word)}
+                  <button onclick="removeBanWord(${w.id})" style="background:none;border:none;color:var(--pink);cursor:pointer;font-size:13px;padding:0;line-height:1;">✕</button>
+                </span>`).join('')}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="bw-input" placeholder="e.g. badword" style="width:180px;"
+              onkeydown="if(event.key==='Enter')addBanWord()">
+            <button class="btn btn-pink" onclick="addBanWord()">[ + ADD ]</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:6px;">
+            Words are replaced with *** in all posts and threads.
+          </div>
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
+    el.innerHTML = html;
+
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><div class="ebig">${t('err_big')}</div><div>${esc(e.message)}</div></div>`;
+  }
+}
+
+// Render user table rows
+function renderUserRows(users, isAdmin) {
+  return users.map(u => `
+    <tr id="urow-${u.id}" data-username="${esc(u.username.toLowerCase())}">
+      <td style="color:var(--text-dim)">${u.id}</td>
+      <td style="color:var(--yellow)">${esc(u.username)}</td>
+      <td>
+        ${u.id === me.id
+          ? `<span class="rbadge ${u.role}">${u.role}</span>`
+          : `<select class="role-sel" onchange="setRole(${u.id},this.value)">
+              <option value="member"    ${u.role==='member'    ?'selected':''}>member</option>
+              ${isAdmin ? `<option value="moderator" ${u.role==='moderator'?'selected':''}>moderator</option>` : ''}
+              ${isAdmin ? `<option value="admin"     ${u.role==='admin'    ?'selected':''}>admin</option>` : ''}
+              <option value="banned"   ${u.role==='banned'   ?'selected':''}>banned</option>
+            </select>`
+        }
+      </td>
+      <td>${u.thread_count}</td>
+      <td>${u.post_count}</td>
+      <td style="color:var(--text-dim)">${fmtDate(u.created_at)}</td>
+      <td>${u.id !== me.id && isAdmin
+        ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id},'${esc(u.username)}')">[ DEL ]</button>`
+        : u.id === me.id ? `<span style="color:var(--text-dim);font-size:10px">[you]</span>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+// Live filter users by username
+function filterUsers() {
+  const q = document.getElementById('usr-search')?.value.toLowerCase().trim() || '';
+  const rows = document.querySelectorAll('#usr-tbody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const name = row.dataset.username || '';
+    const show = !q || name.includes(q);
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  const cnt = document.getElementById('usr-count');
+  if (cnt) cnt.textContent = `${visible} users`;
+}
+
+async function setRole(id, role) {
+  // Ban confirm — warn that all their posts/threads will be deleted
+  if (role === 'banned') {
+    const row = document.getElementById('urow-' + id);
+    const username = row?.querySelector('td:nth-child(2)')?.textContent || '?';
+    const ok = confirm(`BAN "${username}"?\n\nWARNING: ALL their threads and posts will be permanently deleted!`);
+    if (!ok) { loadAdmin(); return; }
+  }
+  try {
+    await api('PUT', `/admin/users/${id}/role`, { role });
+    toast(t('t_role_set', role));
+    loadAdmin();
+  } catch(e) { toast('// ' + e.message, true); loadAdmin(); }
+}
+async function deleteUser(id, name) {
+  if (!confirm(`DELETE user "${name}" and ALL their content?`)) return;
+  try { await api('DELETE', `/admin/users/${id}`); toast(t('t_user_deleted', name)); loadAdmin(); }
+  catch(e) { toast('// ' + e.message, true); }
+}
+async function addBoard() {
+  const slug      = document.getElementById('nc-slug').value.trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
+  const name      = document.getElementById('nc-name').value.trim();
+  const name_ru   = document.getElementById('nc-name-ru').value.trim();
+  const name_uz   = document.getElementById('nc-name-uz').value.trim();
+  const icon      = (document.getElementById('nc-icon').value.trim().toUpperCase() || 'GEN').slice(0, 5);
+  const admin_only = document.getElementById('nc-admin-only').checked;
+  if (!slug) { toast(t('e_slug_req'), true); return; }
+  if (!name) { toast(t('e_name_req'), true); return; }
+  try {
+    await api('POST', '/categories', { slug, name, name_ru: name_ru||name, name_uz: name_uz||name, icon, description: '', admin_only });
+    cats = await api('GET', '/categories');
+    renderSidebar(); loadAdmin();
+    toast(t('t_board_created', name));
+  } catch(e) { toast('// ' + e.message, true); }
+}
+async function addBanWord() {
+  const input = document.getElementById('bw-input');
+  const word  = input?.value.trim().toLowerCase();
+  if (!word) return;
+  try {
+    await api('POST', '/banned-words', { word });
+    input.value = '';
+    toast(`// BANNED: "${word}"`);
+    loadAdmin();
+  } catch(e) { toast('// ' + e.message, true); }
+}
+async function removeBanWord(id) {
+  try {
+    await api('DELETE', `/banned-words/${id}`);
+    toast('// WORD_REMOVED');
+    loadAdmin();
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+async function toggleAdminOnly(id, current) {
+  try {
+    await api('PUT', `/categories/${id}`, { admin_only: !current });
+    cats = await api('GET', '/categories');
+    renderSidebar(); loadAdmin();
+    toast(current ? 'BOARD_OPENED' : 'BOARD_ADMIN_ONLY');
+  } catch(e) { toast('// ' + e.message, true); }
+}
+async function deleteCat(id, name) {
+  if (!confirm(`DELETE board "${name}" and ALL its threads?`)) return;
+  try {
+    await api('DELETE', `/categories/${id}`);
+    if (curCat !== 'all') curCat = 'all';
+    cats = await api('GET', '/categories');
+    renderSidebar(); loadAdmin();
+    toast(t('t_board_deleted'));
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function timeAgo(ts) {
+  const s = Math.floor(Date.now() / 1000 - ts);
+  if (s < 5)     return 'just now';
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+function fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts * 1000).toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function show(id, v) { document.getElementById(id).style.display = v ? '' : 'none'; }
+function toast(msg, err) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════════════
+let curTheme = localStorage.getItem('plchn_theme') || 'dark';
+function applyTheme() {
+  document.documentElement.classList.toggle('light', curTheme === 'light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.innerHTML = `<span style="font-family:JetBrains Mono,monospace;font-size:11px">${curTheme === 'light' ? t('theme_dark') : t('theme_light')}</span>`;
+}
+function toggleTheme() {
+  curTheme = curTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('plchn_theme', curTheme);
+  applyTheme();
+}
+applyTheme();
+
+// ═══════════════════════════════════════════════════
+//  SIMPLE MARKDOWN RENDERER
+// ═══════════════════════════════════════════════════
+function renderMarkdown(text) {
+  if (!text) return '';
+  let h = esc(text);
+  // Code blocks ```
+  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+  // Inline code
+  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Bold **text**
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic *text*
+  h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Strikethrough ~~text~~
+  h = h.replace(/~~(.+?)~~/g, '<del>$1</del>');
+  // Blockquote > text
+  h = h.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  // Links [text](url) — auto-add https:// if no protocol
+  h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, text, url) => {
+    const href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+    return `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+  });
+  // Images ![alt](url)
+  h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+  // Line breaks
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+
+function insertMdTag(textareaId, before, after) {
+  const ta = document.getElementById(textareaId);
+  if (!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end) || 'text';
+  ta.value = ta.value.substring(0, start) + before + sel + (after||'') + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = start + before.length;
+  ta.selectionEnd = start + before.length + sel.length;
+}
+
+function mdToolbarHtml(textareaId) {
+  return `<div class="md-toolbar">
+    <button onclick="insertMdTag('${textareaId}','**','**')" title="Bold"><b>B</b></button>
+    <button onclick="insertMdTag('${textareaId}','*','*')" title="Italic"><i>I</i></button>
+    <button onclick="insertMdTag('${textareaId}','~~','~~')" title="Strikethrough"><s>S</s></button>
+    <button onclick="insertMdTag('${textareaId}','\\n\`\`\`\\n','\\n\`\`\`')" title="Code block">&lt;/&gt;</button>
+    <button onclick="insertMdTag('${textareaId}','\`','\`')" title="Inline code">code</button>
+    <button onclick="insertMdTag('${textareaId}','> ','')" title="Quote">❝</button>
+    <button onclick="insertMdTag('${textareaId}','[','](url)')" title="Link">🔗</button>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════════
+async function loadProfile(username) {
+  const el = document.getElementById('profile-panel');
+  if (!username) { el.innerHTML = '<div class="empty">No user specified</div>'; return; }
+  el.innerHTML = skeletonCards(3);
+  try {
+    const p = await api('GET', `/profile/${encodeURIComponent(username)}`);
+    const isMe = me && me.id === p.id;
+    const avatarInner = p.avatar_url
+      ? `<img src="${esc(p.avatar_url)}" alt="">`
+      : p.username[0].toUpperCase();
+
+    el.innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar ${p.role === 'admin' ? 'admin-av' : p.role === 'moderator' ? 'mod-av' : ''}">${avatarInner}</div>
+        <div class="profile-info">
+          <div class="profile-name">${esc(p.username)} <span class="rbadge ${p.role}">${p.role}</span></div>
+          <span class="profile-rank" style="color:${p.rank.color};border-color:${p.rank.color}">${p.rank.icon} ${p.rank.name}</span>
+          <div class="profile-bio" id="profile-bio">${p.bio ? esc(p.bio) : '<span style="opacity:.4">// no bio set</span>'}</div>
+          <div class="profile-stats">
+            <span>REP: <b>${p.reputation}</b></span>
+            <span>THREADS: <b>${p.thread_count}</b></span>
+            <span>POSTS: <b>${p.post_count}</b></span>
+            <span>JOINED: ${fmtDate(p.created_at)}</span>
+          </div>
+          ${isMe ? `<div style="margin-top:10px">
+            <button class="btn btn-ghost btn-sm" onclick="editProfile()">[ EDIT PROFILE ]</button>
+          </div>` : `<div style="margin-top:10px">
+            <button class="btn btn-cyan btn-sm" onclick="window.location='/messenger.html#dm:${p.id}'">[ ✉ XABAR YUBORISH ]</button>
+          </div>`}
+        </div>
+      </div>
+      <div class="profile-tabs">
+        <div class="profile-tab active" onclick="showProfileTab(this,'prof-threads')">THREADS</div>
+        <div class="profile-tab" onclick="showProfileTab(this,'prof-posts')">POSTS</div>
+      </div>
+      <div class="profile-section" id="prof-threads">
+        ${p.recentThreads.length ? p.recentThreads.map(th => `
+          <div class="tcard" style="margin-bottom:2px" onclick="openThread(${th.id})">
+            <div><div class="ttitle">${esc(th.title)}</div>
+            <div class="tmeta"><span class="tcat-tag">${esc(th.cat_name)}</span><span>${timeAgo(th.created_at)}</span><span>👁 ${th.views}</span></div></div>
+            <div class="tstats"><div class="rnum">${th.reply_count}</div><div class="rlabel">replies</div></div>
+          </div>`).join('') : '<div style="padding:16px;color:var(--text-dim);font-size:12px">// no threads yet</div>'}
+      </div>
+      <div class="profile-section" id="prof-posts" style="display:none">
+        ${p.recentPosts.length ? p.recentPosts.map(po => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openThread(${po.thread_id})">
+            <div style="font-size:11px;color:var(--cyan-dim);font-family:'JetBrains Mono',monospace;margin-bottom:3px">in: ${esc(po.thread_title)}</div>
+            <div style="font-size:12px;color:var(--text)">${esc(po.body).slice(0,150)}${po.body.length > 150 ? '…' : ''}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:3px">${timeAgo(po.created_at)}</div>
+          </div>`).join('') : '<div style="padding:16px;color:var(--text-dim);font-size:12px">// no posts yet</div>'}
+      </div>`;
+  } catch(e) { el.innerHTML = `<div class="empty"><div class="ebig">ERR</div><div>${esc(e.message)}</div></div>`; }
+}
+
+function showProfileTab(tabEl, sectionId) {
+  document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.querySelectorAll('.profile-section').forEach(s => s.style.display = 'none');
+  document.getElementById(sectionId).style.display = '';
+}
+
+async function editProfile() {
+  const bioEl = document.getElementById('profile-bio');
+  if (!bioEl) return;
+  const profile = me ? await api('GET', `/profile/${me.username}`) : {};
+  const curBio = profile.bio || '';
+  const curAvatar = profile.avatar_url || '';
+  bioEl.innerHTML = `
+    <div class="avatar-upload">
+      <div class="avatar-preview" id="av-preview" style="${curAvatar ? 'display:block' : ''}">
+        <img src="${curAvatar ? esc(curAvatar) : ''}" id="av-preview-img">
+      </div>
+      <label style="margin-top:6px">
+        📷 RASM TANLASH
+        <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+      </label>
+      ${curAvatar ? `<button class="btn btn-ghost btn-sm" style="margin-left:6px" onclick="clearAvatar()">✕ O'CHIRISH</button>` : ''}
+      <input type="hidden" id="av-url" value="${esc(curAvatar)}">
+    </div>
+    <textarea id="edit-bio" rows="3" maxlength="500" style="margin-top:8px" placeholder="Bio...">${esc(curBio)}</textarea>
+    <div class="factions" style="margin-top:6px">
+      <button class="btn btn-cyan btn-sm" onclick="saveProfile()">[ SAVE ]</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav('profile',me.username)">${t('cancel')}</button>
+    </div>`;
+}
+
+async function uploadAvatar(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'same-origin' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    document.getElementById('av-url').value = data.url;
+    document.getElementById('av-preview-img').src = data.url;
+    document.getElementById('av-preview').style.display = 'block';
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+function clearAvatar() {
+  document.getElementById('av-url').value = '';
+  document.getElementById('av-preview').style.display = 'none';
+  document.getElementById('av-preview-img').src = '';
+}
+
+async function saveProfile() {
+  const bio = document.getElementById('edit-bio')?.value || '';
+  const avatar_url = document.getElementById('av-url')?.value || '';
+  try {
+    await api('PUT', '/profile/me/update', { bio, avatar_url });
+    toast('// PROFILE_UPDATED');
+    nav('profile', me.username);
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════
+//  BOOKMARKS
+// ═══════════════════════════════════════════════════
+async function loadBookmarks() {
+  const el = document.getElementById('bookmarks-list');
+  el.innerHTML = skeletonCards(3);
+  try {
+    const bms = await api('GET', '/bookmarks');
+    if (!bms.length) {
+      el.innerHTML = `<div class="empty"><div class="ebig">📌</div><div>No bookmarks yet</div></div>`;
+      return;
+    }
+    el.innerHTML = bms.map(bm => `
+      <div class="tcard${bm.pinned ? ' pinned' : ''}${bm.locked ? ' locked' : ''}" onclick="openThread(${bm.thread_id})">
+        <div>
+          <div class="ttitle">${esc(bm.title)}</div>
+          <div class="tmeta">
+            <span class="tauthor">${esc(bm.author)}</span>
+            <span class="tcat-tag">${esc(bm.cat_name)}</span>
+            <span>👁 ${bm.views}</span>
+            <span>${bm.reply_count} replies</span>
+          </div>
+        </div>
+        <div class="tstats"><div class="rnum">${bm.reply_count}</div><div class="rlabel">replies</div></div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = `<div class="empty"><div class="ebig">ERR</div><div>${esc(e.message)}</div></div>`; }
+}
+
+async function toggleBookmark(threadId) {
+  if (!me) { openAuth(); return; }
+  try {
+    const res = await api('POST', '/bookmarks/toggle', { thread_id: threadId });
+    const btn = document.getElementById('bm-btn');
+    if (btn) {
+      btn.classList.toggle('active', res.bookmarked);
+      btn.textContent = res.bookmarked ? '[ 📌 SAVED ]' : '[ 📌 SAVE ]';
+    }
+    toast(res.bookmarked ? '// BOOKMARKED' : '// BOOKMARK_REMOVED');
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+// ═══════════════════════════════════════════════════
+//  REPUTATION VOTING
+// ═══════════════════════════════════════════════════
+let threadVotes = { totals: {}, myVotes: {} };
+
+async function loadVotes(threadId) {
+  if (!me) { threadVotes = { totals: {}, myVotes: {} }; return; }
+  try {
+    threadVotes = await api('GET', `/reputation/thread/${threadId}`);
+  } catch(e) { threadVotes = { totals: {}, myVotes: {} }; }
+}
+
+async function votePost(postId, value) {
+  if (!me) { openAuth(); return; }
+  try {
+    const res = await api('POST', '/reputation/vote', { post_id: postId, value });
+    // Update local state
+    if (res.vote === 0) {
+      delete threadVotes.myVotes[postId];
+      threadVotes.totals[postId] = (threadVotes.totals[postId] || 0) - value;
+    } else {
+      const old = threadVotes.myVotes[postId] || 0;
+      threadVotes.myVotes[postId] = res.vote;
+      threadVotes.totals[postId] = (threadVotes.totals[postId] || 0) + res.vote - old;
+    }
+    // Update UI
+    const scoreEl = document.getElementById(`vote-score-${postId}`);
+    const upBtn = document.getElementById(`vote-up-${postId}`);
+    const downBtn = document.getElementById(`vote-down-${postId}`);
+    if (scoreEl) scoreEl.textContent = threadVotes.totals[postId] || 0;
+    if (upBtn) upBtn.className = 'vote-btn' + (threadVotes.myVotes[postId] === 1 ? ' voted-up' : '');
+    if (downBtn) downBtn.className = 'vote-btn' + (threadVotes.myVotes[postId] === -1 ? ' voted-down' : '');
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+function voteHtml(postId) {
+  const total = threadVotes.totals[postId] || 0;
+  const my = threadVotes.myVotes[postId] || 0;
+  return `<div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+    <button id="vote-up-${postId}" class="vote-btn${my===1?' voted-up':''}" onclick="event.stopPropagation();votePost(${postId},1)">▲</button>
+    <span id="vote-score-${postId}" class="vote-score" style="color:${total>0?'var(--cyan)':total<0?'var(--pink)':'var(--text-dim)'}">${total}</span>
+    <button id="vote-down-${postId}" class="vote-btn${my===-1?' voted-down':''}" onclick="event.stopPropagation();votePost(${postId},-1)">▼</button>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+//  DRAG & DROP IMAGE UPLOAD
+// ═══════════════════════════════════════════════════
+let dragCounter = 0;
+document.addEventListener('dragenter', (e) => {
+  e.preventDefault();
+  if (e.dataTransfer.types.includes('Files')) {
+    dragCounter++;
+    document.getElementById('drag-overlay')?.classList.add('show');
+  }
+});
+document.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  dragCounter--;
+  if (dragCounter <= 0) {
+    dragCounter = 0;
+    document.getElementById('drag-overlay')?.classList.remove('show');
+  }
+});
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  dragCounter = 0;
+  document.getElementById('drag-overlay')?.classList.remove('show');
+  const file = e.dataTransfer?.files?.[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  if (!me) { openAuth(); return; }
+
+  // Find the visible upload target
+  const targets = [
+    { file: 'nt-img-file', preview: 'nt-img-preview', url: 'nt-img-url', status: 'nt-img-status' },
+    { file: 'rb-img-file', preview: 'rb-img-preview', url: 'rb-img-url', status: 'rb-img-status' },
+  ];
+  let target = null;
+  for (const t of targets) {
+    const el = document.getElementById(t.file);
+    if (el && el.offsetParent !== null) { target = t; break; }
+  }
+  if (!target) { toast('// Open a reply or new thread form first', true); return; }
+
+  // Upload
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  const input = document.getElementById(target.file);
+  input.files = dt.files;
+  handleImgSelect(input, target.preview, target.url, target.status);
+});
+
+// ═══════════════════════════════════════════════════
+//  AUTO-REFRESH
+// ═══════════════════════════════════════════════════
+let autoRefreshTimer = null;
+let lastPostCount = 0;
+
+function startAutoRefresh(threadId) {
+  stopAutoRefresh();
+  autoRefreshTimer = setInterval(async () => {
+    try {
+      const { posts } = await api('GET', `/threads/${threadId}`);
+      if (posts.length > lastPostCount && lastPostCount > 0) {
+        toast(`// ${posts.length - lastPostCount} new repl${posts.length-lastPostCount>1?'ies':'y'}!`);
+        // Only full reload if user is at bottom
+        const atBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200;
+        if (atBottom) {
+          await loadThread(threadId);
+        }
+      }
+      lastPostCount = posts.length;
+    } catch(e) { /* silently fail */ }
+  }, 15000); // Check every 15 seconds
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+}
+
+// ═══════════════════════════════════════════════════
+//  UX HELPERS
+// ═══════════════════════════════════════════════════
+
+// Scroll-to-top visibility
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scroll-top');
+  if (btn) btn.classList.toggle('show', window.scrollY > 300);
+}, { passive: true });
+
+// Search clear toggle
+function toggleSearchClear() {
+  const q = document.getElementById('q');
+  const btn = document.getElementById('search-clear');
+  if (btn) btn.classList.toggle('show', q && q.value.length > 0);
+}
+function clearSearch() {
+  const q = document.getElementById('q');
+  if (q) { q.value = ''; q.focus(); }
+  toggleSearchClear();
+  if (curSearch) { curSearch = ''; curPage = 1; nav('board'); }
+}
+
+// Auto-resize textareas
+document.addEventListener('input', (e) => {
+  if (e.target.tagName === 'TEXTAREA') {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 400) + 'px';
+  }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Escape: close lightbox, auth modal, mobile sidebar
+  if (e.key === 'Escape') {
+    closeLightbox();
+    if (document.getElementById('auth-overlay')?.classList.contains('open')) closeAuth();
+    closeMobileSidebar();
+  }
+  // Ctrl+K / Cmd+K: focus search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const q = document.getElementById('q');
+    if (q) { q.focus(); q.select(); }
+  }
+});
+
+// Skeleton loading HTML helper
+function skeletonCards(n = 5) {
+  return Array(n).fill('').map(() =>
+    `<div class="skeleton skeleton-card"></div>`
+  ).join('');
+}
+
+init();
+
+// ═══════════════════════════════════════════════════
+//  EVENTS & MEETUPS
+// ═══════════════════════════════════════════════════
+
+async function loadEvents() {
+  const el = document.getElementById('events-list');
+  el.innerHTML = '<div class="empty"><span class="spinner"></span>LOADING EVENTS…</div>';
+  document.getElementById('btn-new-event').style.display = me ? 'inline-block' : 'none';
+  try {
+    const events = await api('GET', '/events');
+    if (!events.length) {
+      el.innerHTML = '<div class="empty"><div class="ebig">📅</div><div>No upcoming events</div></div>';
+      return;
+    }
+    el.innerHTML = events.map(ev => `
+      <div class="tcard" style="display:block;cursor:default;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="ttitle" style="color:var(--cyan);font-size:16px">${esc(ev.title)}</div>
+            <div class="tmeta" style="margin-top:4px;">
+              <span class="tpin-badge">HOST: ${esc(ev.creator_name)}</span>
+              <span>📅 ${new Date(ev.event_date * 1000).toLocaleString()}</span>
+              <span>📍 ${esc(ev.location)}</span>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="rnum" style="color:var(--yellow)">${ev.going_count}</div>
+            <div class="rlabel">ATTENDING</div>
+          </div>
+        </div>
+        <div class="pbody md-rendered" style="margin-top:12px;font-size:13px">${renderMarkdown(ev.description)}</div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;">
+          <button class="btn btn-cyan btn-sm" onclick="rsvpEvent(${ev.id})">[ RSVP (I'M GOING) ]</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><div class="ebig">ERR</div><div>${esc(e.message)}</div></div>`;
+  }
+}
+
+function openNewEventModal() {
+  if (!me) { openAuth(); return; }
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-desc').value = '';
+  document.getElementById('ev-date').value = '';
+  document.getElementById('ev-loc').value = '';
+  document.getElementById('ev-err').textContent = '';
+  document.getElementById('event-modal-overlay').classList.add('open');
+}
+
+function closeEventModal() {
+  document.getElementById('event-modal-overlay').classList.remove('open');
+}
+
+async function submitEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  const desc = document.getElementById('ev-desc').value.trim();
+  const dateStr = document.getElementById('ev-date').value;
+  const loc = document.getElementById('ev-loc').value.trim();
+  const errEl = document.getElementById('ev-err');
+  const btn = document.getElementById('ev-btn');
+  errEl.textContent = '';
+  if (!title || !desc || !dateStr || !loc) { errEl.textContent = t('e_all_fields'); return; }
+  
+  btn.disabled = true; btn.textContent = '[ CREATING... ]';
+  try {
+    const eventTime = new Date(dateStr).getTime() / 1000;
+    await api('POST', '/events', { title, description: desc, event_date: eventTime, location: loc });
+    closeEventModal();
+    toast('// EVENT_CREATED');
+    loadEvents();
+  } catch(e) {
+    errEl.textContent = '// ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '[ CREATE EVENT ]';
+  }
+}
+
+async function rsvpEvent(eventId) {
+  if (!me) { openAuth(); return; }
+  try {
+    await api('POST', `/events/${eventId}/rsvp`, { status: 'going' });
+    toast('// RSVP_SUCCESSFUL');
+    loadEvents();
+  } catch(e) {
+    toast('// ' + e.message, true);
+  }
+}
+
+</script>
+</body>
+</html>

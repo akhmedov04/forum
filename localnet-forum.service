@@ -1,0 +1,17 @@
+[Unit]
+Description=PLOV//CHAN Forum
+After=network.target
+
+[Service]
+Type=simple
+User=akhmedov
+WorkingDirectory=/home/akhmedov/plovchan
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=SESSION_SECRET=REPLACE_WITH_RANDOM_SECRET
+
+[Install]
+WantedBy=multi-user.target
