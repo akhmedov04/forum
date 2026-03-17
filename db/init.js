@@ -216,8 +216,15 @@ async function initSchema() {
 
   // Migration: add role to conv_participants
   const cpcols = await db.all(`PRAGMA table_info(conv_participants)`);
-  if (!cpcols.map(c=>c.name).includes('role'))
+  const cpcolNames = cpcols.map(c=>c.name);
+  if (!cpcolNames.includes('role'))
     await db.run(`ALTER TABLE conv_participants ADD COLUMN role TEXT NOT NULL DEFAULT 'member'`);
+
+  // Migration: per-user conversation flags (pin / hide)
+  if (!cpcolNames.includes('pinned'))
+    await db.run(`ALTER TABLE conv_participants ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0`);
+  if (!cpcolNames.includes('hidden'))
+    await db.run(`ALTER TABLE conv_participants ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0`);
 
   // Migration: add reply_to_id to messages
   const mcols = await db.all(`PRAGMA table_info(messages)`);

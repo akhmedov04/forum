@@ -10,12 +10,13 @@ router.get('/conversations', async (req, res) => {
   try {
     const userId = req.session.user.id;
     const convs = await db.all(`
-      SELECT c.*, cp.last_read,
+      SELECT c.*, cp.last_read, cp.pinned, cp.hidden,
         (SELECT COUNT(*) FROM messages WHERE conv_id=c.id AND deleted=0) as msg_count,
         (SELECT COUNT(*) FROM messages WHERE conv_id=c.id AND deleted=0 AND created_at > cp.last_read AND user_id != ?) as unread_count
       FROM conversations c
       JOIN conv_participants cp ON cp.conv_id=c.id AND cp.user_id=?
-      ORDER BY c.updated_at DESC`, [userId, userId]);
+      WHERE cp.hidden=0
+      ORDER BY cp.pinned DESC, c.updated_at DESC`, [userId, userId]);
 
     // For DMs, get the other participant's info
     for (const c of convs) {
@@ -32,6 +33,35 @@ router.get('/conversations', async (req, res) => {
         ORDER BY m.created_at DESC LIMIT 1`, [c.id]);
     }
     res.json(convs);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Pin / unpin conversation for current user ─────
+router.put('/conversations/:id/pin', async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const convId = parseInt(req.params.id);
+    const pinned = req.body?.pinned ? 1 : 0;
+
+    const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [convId, userId]);
+    if (!member) return res.status(403).json({ error: 'Not a member' });
+
+    await db.run('UPDATE conv_participants SET pinned=? WHERE conv_id=? AND user_id=?', [pinned, convId, userId]);
+    res.json({ ok: true, pinned });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Hide (delete from sidebar) for current user ─────
+router.delete('/conversations/:id', async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const convId = parseInt(req.params.id);
+
+    const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [convId, userId]);
+    if (!member) return res.status(403).json({ error: 'Not a member' });
+
+    await db.run('UPDATE conv_participants SET hidden=1, pinned=0 WHERE conv_id=? AND user_id=?', [convId, userId]);
+    res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -54,7 +84,11 @@ router.post('/conversations/dm', async (req, res) => {
         AND EXISTS (SELECT 1 FROM conv_participants WHERE conv_id=c.id AND user_id=?)`,
       [myId, user_id]);
 
-    if (existing) return res.json({ conv_id: existing.id, existing: true });
+    if (existing) {
+      // Ensure it is visible again for the current user
+      await db.run('UPDATE conv_participants SET hidden=0 WHERE conv_id=? AND user_id=?', [existing.id, myId]);
+      return res.json({ conv_id: existing.id, existing: true });
+    }
 
     const r = await db.run('INSERT INTO conversations(type, created_by) VALUES(?,?)', ['dm', myId]);
     const convId = r.lastInsertRowid;

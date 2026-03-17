@@ -537,6 +537,7 @@ const LANGS = {
     img_label: '📎 image',
     theme_dark: '◐ DARK', theme_light: '◑ LIGHT',
     ctx_reply: '↩ Reply', ctx_edit: '✎ Edit', ctx_delete: '✕ Delete', ctx_forward: '⤻ Forward',
+    ctx_pin: '📌 Pin', ctx_unpin: 'Unpin', ctx_delete_chat: '✕ Delete chat',
     reply_to: 'Reply to',
     fwd_title: '// FORWARD',
     gp_title: '// GROUP SETTINGS', gp_name: 'GROUP NAME', gp_avatar: 'AVATAR', gp_members: 'MEMBERS',
@@ -545,7 +546,8 @@ const LANGS = {
     gp_name_saved: '// name updated', gp_avatar_saved: '// avatar updated',
     gp_kicked: '// member removed', gp_role_set: '// role updated', gp_left: '// left group',
     gp_added: '// member added', fwd_sent: '// forwarded',
-    joined: 'Joined:', last_seen: 'Seen:'
+    joined: 'Joined:', last_seen: 'Seen:',
+    del_chat_confirm: 'Delete this chat from sidebar?'
   },
   ru: {
     login_user: 'Пользователь', login_pass: 'Пароль', login_btn: '[ ВОЙТИ ]',
@@ -571,6 +573,7 @@ const LANGS = {
     img_label: '📎 фото',
     theme_dark: '◐ ТЁМН', theme_light: '◑ СВЕТ',
     ctx_reply: '↩ Ответить', ctx_edit: '✎ Редактировать', ctx_delete: '✕ Удалить', ctx_forward: '⤻ Переслать',
+    ctx_pin: '📌 Закрепить', ctx_unpin: 'Открепить', ctx_delete_chat: '✕ Удалить чат',
     reply_to: 'Ответ на',
     fwd_title: '// ПЕРЕСЛАТЬ',
     gp_title: '// НАСТРОЙКИ', gp_name: 'НАЗВАНИЕ', gp_avatar: 'АВАТАР', gp_members: 'УЧАСТНИКИ',
@@ -579,7 +582,8 @@ const LANGS = {
     gp_name_saved: '// название обновлено', gp_avatar_saved: '// аватар обновлён',
     gp_kicked: '// участник удалён', gp_role_set: '// роль изменена', gp_left: '// вы покинули группу',
     gp_added: '// участник добавлен', fwd_sent: '// переслано',
-    joined: 'Рег:', last_seen: 'Был(а):'
+    joined: 'Рег:', last_seen: 'Был(а):',
+    del_chat_confirm: 'Удалить этот чат из списка?'
   },
   uz: {
     login_user: 'Foydalanuvchi', login_pass: 'Parol', login_btn: '[ KIRISH ]',
@@ -605,6 +609,7 @@ const LANGS = {
     img_label: '📎 rasm',
     theme_dark: '◐ QORA', theme_light: "◑ YORUG'",
     ctx_reply: '↩ Javob', ctx_edit: '✎ Tahrirlash', ctx_delete: "✕ O'chirish", ctx_forward: '⤻ Uzatish',
+    ctx_pin: '📌 Pin', ctx_unpin: 'Pinni olish', ctx_delete_chat: "✕ Chatni o'chirish",
     reply_to: 'Javob:',
     fwd_title: '// UZATISH',
     gp_title: '// GURUH SOZLAMALARI', gp_name: 'GURUH NOMI', gp_avatar: 'AVATAR', gp_members: "A'ZOLAR",
@@ -613,7 +618,8 @@ const LANGS = {
     gp_name_saved: '// nom yangilandi', gp_avatar_saved: '// avatar yangilandi',
     gp_kicked: "// a'zo chiqarildi", gp_role_set: '// rol yangilandi', gp_left: '// guruhdan chiqdingiz',
     gp_added: "// a'zo qo'shildi", fwd_sent: '// uzatildi',
-    joined: 'Reg:', last_seen: "Ko'rilgan:"
+    joined: 'Reg:', last_seen: "Ko'rilgan:",
+    del_chat_confirm: "Chatni sidebar ro'yxatidan o'chirish?"
   }
 };
 
@@ -960,23 +966,46 @@ function renderConvList() {
 
   let filtered = convs;
   if (q) filtered = convs.filter(c => getConvDisplayName(c).toLowerCase().includes(q));
+  filtered = [...filtered].sort((a, b) => (b.pinned || 0) - (a.pinned || 0) || (b.updated_at - a.updated_at));
 
   el.innerHTML = filtered.length ? filtered.map(c => {
     const name = getConvDisplayName(c);
+    const pin = c.pinned ? '📌 ' : '';
     const preview = c.last_message
       ? (c.last_message.deleted ? t('deleted') : `${c.last_message.author}: ${c.last_message.body?.slice(0,40) || t('img_label')}`)
       : t('new_conv');
     const time = c.last_message ? timeAgo(c.last_message.created_at) : '';
     const unread = c.unread_count > 0;
-    return `<div class="conv-item${activeConvId === c.id ? ' active' : ''}${unread ? ' unread' : ''}" onclick="openChat(${c.id})">
+    return `<div class="conv-item${activeConvId === c.id ? ' active' : ''}${unread ? ' unread' : ''}" data-conv-id="${c.id}">
       ${getConvAvatar(c)}
       <div class="conv-info">
-        <div class="conv-name"><span>${esc(name)}</span><span class="time">${time}</span></div>
+        <div class="conv-name"><span>${esc(pin + name)}</span><span class="time">${time}</span></div>
         <div class="conv-preview">${esc(preview)}</div>
       </div>
       ${unread ? `<div class="unread-badge">${c.unread_count}</div>` : ''}
     </div>`;
   }).join('') : `<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:11px;font-family:'JetBrains Mono',monospace">${t('no_convs')}</div>`;
+
+  // Attach events (click + context menu + long press)
+  el.querySelectorAll('.conv-item').forEach(item => {
+    const convId = parseInt(item.getAttribute('data-conv-id'));
+    let suppressClick = false;
+    item.addEventListener('click', (ev) => {
+      if (suppressClick) { suppressClick = false; ev.preventDefault(); ev.stopPropagation(); return; }
+      openChat(convId);
+    });
+    item.addEventListener('contextmenu', (e) => { e.preventDefault(); showConvMenu(e, convId); });
+    let lpTimer = null;
+    item.addEventListener('touchstart', (e) => {
+      lpTimer = setTimeout(() => {
+        suppressClick = true;
+        const touch = e.touches[0];
+        showConvMenu({ clientX: touch.clientX, clientY: touch.clientY }, convId);
+      }, 500);
+    }, { passive: true });
+    item.addEventListener('touchend', () => clearTimeout(lpTimer));
+    item.addEventListener('touchmove', () => clearTimeout(lpTimer));
+  });
 }
 
 function filterConvs() { renderConvList(); }
@@ -1252,9 +1281,66 @@ function hideCtxMenu() {
   document.getElementById('ctx-backdrop')?.remove();
 }
 
+// ═══════════════════════════════════════════════════
+//  CONVERSATION CONTEXT MENU (sidebar)
+// ═══════════════════════════════════════════════════
+function showConvMenu(e, convId) {
+  hideCtxMenu();
+  const conv = convs.find(c => c.id === convId);
+  if (!conv) return;
+  const menu = document.getElementById('ctx-menu');
+  const isPinned = !!conv.pinned;
+
+  let items = '';
+  items += `<button class="ctx-item" onclick="togglePinConv(${convId})">${isPinned ? t('ctx_unpin') : t('ctx_pin')}</button>`;
+  items += `<div class="ctx-sep"></div>`;
+  items += `<button class="ctx-item danger" onclick="deleteConv(${convId})">${t('ctx_delete_chat')}</button>`;
+  menu.innerHTML = items;
+
+  const isMobile = window.innerWidth <= 640;
+  if (isMobile) {
+    const bd = document.createElement('div');
+    bd.id = 'ctx-backdrop';
+    bd.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299;';
+    bd.onclick = hideCtxMenu;
+    document.body.appendChild(bd);
+    menu.style.left = '';
+    menu.style.top = '';
+    menu.style.display = 'block';
+  } else {
+    menu.style.display = 'block';
+    const mw = menu.offsetWidth, mh = menu.offsetHeight;
+    menu.style.left = Math.min(e.clientX, window.innerWidth - mw - 8) + 'px';
+    menu.style.top = Math.min(e.clientY, window.innerHeight - mh - 8) + 'px';
+  }
+}
+
+async function togglePinConv(convId) {
+  hideCtxMenu();
+  const conv = convs.find(c => c.id === convId);
+  if (!conv) return;
+  const next = conv.pinned ? 0 : 1;
+  try {
+    await api('PUT', `/messenger/conversations/${convId}/pin`, { pinned: next });
+    conv.pinned = next;
+    renderConvList();
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
+async function deleteConv(convId) {
+  hideCtxMenu();
+  if (!confirm(t('del_chat_confirm'))) return;
+  try {
+    await api('DELETE', `/messenger/conversations/${convId}`);
+    convs = convs.filter(c => c.id !== convId);
+    if (activeConvId === convId) closeChat();
+    renderConvList();
+  } catch(e) { toast('// ' + e.message, true); }
+}
+
 document.addEventListener('click', (e) => { if (!e.target.closest('.ctx-menu')) hideCtxMenu(); });
 document.addEventListener('contextmenu', (e) => {
-  if (!e.target.closest('.msg')) hideCtxMenu();
+  if (!e.target.closest('.msg') && !e.target.closest('.conv-item') && !e.target.closest('.ctx-menu')) hideCtxMenu();
 });
 
 // ═══════════════════════════════════════════════════
