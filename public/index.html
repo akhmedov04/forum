@@ -1452,13 +1452,20 @@ function renderMobileSidebar() {
     </div>`).join('');
   if (me) {
     ms.innerHTML = `
+      <div class="slink" onclick="closeMobileSidebar();goHome()">[ Boards ]</div>
+      <div class="slink" onclick="closeMobileSidebar();window.location='/messenger.html'">[ ✉ Messenger ]</div>
+      <div class="slink" onclick="closeMobileSidebar();nav('events')">${t('events_nav')}</div>
       <div class="slink" onclick="closeMobileSidebar();nav('profile',me.username)">[ 👤 PROFILE ]</div>
       <div class="slink" onclick="closeMobileSidebar();nav('bookmarks')">[ 📌 BOOKMARKS ]</div>
       ${(me.role === 'admin' || me.role === 'moderator') ? `<div class="slink hilite" onclick="closeMobileSidebar();nav('admin')">${me.role === 'admin' ? t('s_admin') : '[ ★ MOD ]'}</div>` : ''}
       <div class="slink" onclick="closeMobileSidebar();nav('cpw')">${t('s_changepw')}</div>
       <div class="slink pink" onclick="closeMobileSidebar();doLogout()">${t('s_logout')}</div>`;
   } else {
-    ms.innerHTML = `<div class="slink" onclick="closeMobileSidebar();openAuth()">${t('s_login')}</div>`;
+    ms.innerHTML = `
+      <div class="slink" onclick="closeMobileSidebar();goHome()">[ Boards ]</div>
+      <div class="slink" onclick="closeMobileSidebar();window.location='/messenger.html'">[ ✉ Messenger ]</div>
+      <div class="slink" onclick="closeMobileSidebar();nav('events')">${t('events_nav')}</div>
+      <div class="slink" onclick="closeMobileSidebar();openAuth()">${t('s_login')}</div>`;
   }
 }
 function setCatMobile(slug) {
