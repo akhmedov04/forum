@@ -16,17 +16,23 @@
   --border:#0f2030;--border-bright:#1a3348;
   --glow-cyan:0 0 10px rgba(0,245,255,.5),0 0 30px rgba(0,245,255,.2);
   --radius:4px;
+  --app-height:100dvh;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
 }
-html,body{height:100%;height:100dvh;overflow:hidden;}
+html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
 ::selection{background:rgba(0,245,255,.25);color:#fff;}
 
 /* ── LAYOUT ── */
-.app{display:flex;height:100vh;height:100dvh;width:100vw;overflow:hidden;}
+.app{display:flex;height:var(--app-height);width:100vw;overflow:hidden;}
 .sidebar{width:320px;background:var(--bg2);border-right:1px solid var(--border-bright);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
 .chat-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 .empty-chat{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text-dim);}
 .empty-chat .big{font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;color:var(--bg3);line-height:1;}
+
+/* ── MOBILE BACKDROP (sidebar) ── */
+#sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;}
+#sidebar-backdrop.open{display:block;}
 
 /* ── ACTIVE CHAT ── */
 .active-chat{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
@@ -150,7 +156,7 @@ html.light .msg.other .msg-bubble{background:var(--bg2);border-color:var(--borde
 html.light .msg.me .msg-bubble{background:rgba(0,109,117,.08);border-color:rgba(0,109,117,.2);}
 
 /* ── INPUT BAR ── */
-.input-bar{padding:10px 16px;border-top:1px solid var(--border-bright);background:var(--bg2);flex-shrink:0;}
+.input-bar{padding:10px 16px calc(10px + var(--safe-bottom));border-top:1px solid var(--border-bright);background:var(--bg2);flex-shrink:0;}
 .input-row{display:flex;gap:8px;align-items:flex-end;}
 .input-row textarea{flex:1;background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:none;min-height:38px;max-height:150px;border-radius:var(--radius);transition:border-color .12s;line-height:1.4;}
 .input-row textarea:focus{border-color:var(--cyan-dim);}
@@ -205,7 +211,7 @@ html.light .msg.me .msg-bubble{background:rgba(0,109,117,.08);border-color:rgba(
 /* ── RESPONSIVE MOBILE ── */
 @media(max-width:640px){
   /* Sidebar: fullscreen overlay */
-  .sidebar{position:fixed;left:0;top:0;bottom:0;width:100%;z-index:100;transform:translateX(-100%);transition:transform .2s ease;border-right:none;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:100%;z-index:100;transform:translateX(-100%);transition:transform .2s ease;border-right:none;padding-bottom:var(--safe-bottom);}
   .sidebar.open{transform:translateX(0);}
 
   /* Sidebar header: bigger touch targets */
@@ -242,7 +248,7 @@ html.light .msg.me .msg-bubble{background:rgba(0,109,117,.08);border-color:rgba(
   .msg-day-sep{font-size:11px;padding:8px 0;}
 
   /* Input bar: comfortable mobile input */
-  .input-bar{padding:8px 10px;}
+  .input-bar{padding:8px 10px calc(8px + var(--safe-bottom));}
   .input-row{gap:6px;}
   .input-row textarea{font-size:15px;padding:10px 12px;min-height:42px;-webkit-appearance:none;}
   .send-btn{padding:10px 14px;font-size:12px;min-height:42px;}
@@ -250,7 +256,7 @@ html.light .msg.me .msg-bubble{background:rgba(0,109,117,.08);border-color:rgba(
   .reply-preview{padding:8px 12px;font-size:12px;}
 
   /* Context menu: bottom sheet style on mobile */
-  .ctx-menu{position:fixed!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;width:auto!important;border-radius:12px;min-width:auto;}
+  .ctx-menu{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(8px + var(--safe-bottom))!important;top:auto!important;width:auto!important;border-radius:12px;min-width:auto;}
   .ctx-item{padding:14px 18px;font-size:14px;}
   .ctx-sep{margin:4px 0;}
 
@@ -282,7 +288,7 @@ html.light .msg.me .msg-bubble{background:rgba(0,109,117,.08);border-color:rgba(
   .login-screen .logo{font-size:28px;}
 
   /* Toast: bottom center on mobile */
-  .toast{left:16px;right:16px;bottom:80px;text-align:center;font-size:12px;}
+  .toast{left:16px;right:16px;bottom:calc(80px + var(--safe-bottom));text-align:center;font-size:12px;}
 
   /* Lightbox: fullscreen */
   #lightbox img{max-width:98vw;max-height:80vh;}
@@ -375,6 +381,7 @@ html.light .msg-actions{background:var(--bg2);border-color:var(--border-bright);
     </div>
     <div class="conv-list" id="conv-list"></div>
   </div>
+  <div id="sidebar-backdrop" onclick="setSidebarOpen(false)"></div>
 
   <!-- Chat area -->
   <div class="chat-area" id="chat-area">
@@ -393,7 +400,7 @@ html.light .msg-actions{background:var(--bg2);border-color:var(--border-bright);
         <button class="sb-btn" id="ch-settings-btn" onclick="openGroupPanel()" style="display:none" title="Settings">⚙</button>
       </div>
       <div class="messages" id="messages"></div>
-      <div id="typing-area" style="display:none;padding:2px 16px;flex-shrink:0">>
+      <div id="typing-area" style="display:none;padding:2px 16px;flex-shrink:0">
         <span class="typing-indicator" id="typing-text"></span>
       </div>
       <div class="input-bar" id="input-bar">
@@ -414,7 +421,7 @@ html.light .msg-actions{background:var(--bg2);border-color:var(--border-bright);
         </div>
       </div>
       <!-- Jump to bottom button -->
-      <button id="jump-bottom" onclick="scrollToBottom()" style="display:none;position:absolute;bottom:70px;right:20px;width:36px;height:36px;border-radius:50%;background:var(--bg2);border:1px solid var(--cyan-dark);color:var(--cyan);font-size:16px;cursor:pointer;z-index:50;display:none;align-items:center;justify-content:center;box-shadow:var(--glow-cyan); transition:all .15s;">↓</button>
+      <button id="jump-bottom" onclick="scrollToBottom()" style="display:none;position:absolute;bottom:calc(70px + var(--safe-bottom));right:20px;width:36px;height:36px;border-radius:50%;background:var(--bg2);border:1px solid var(--cyan-dark);color:var(--cyan);font-size:16px;cursor:pointer;z-index:50;display:none;align-items:center;justify-content:center;box-shadow:var(--glow-cyan); transition:all .15s;">↓</button>
       
       <!-- Group panel (absolute inside active-chat) -->
       <div class="group-panel" id="group-panel" style="display:none">
@@ -712,6 +719,30 @@ let replyTo = null; // { id, author, body }
 let msgCache = {}; // id -> message data for reply lookups
 
 // ═══════════════════════════════════════════════════
+//  MOBILE VIEWPORT / KEYBOARD (iOS Safari friendly)
+// ═══════════════════════════════════════════════════
+function updateAppHeight() {
+  const vv = window.visualViewport;
+  const h = vv?.height || window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', h + 'px');
+}
+
+function isMobileView() { return window.innerWidth <= 640; }
+
+function setSidebarOpen(open) {
+  const sb = document.getElementById('sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  if (!sb || !bd) return;
+  if (!isMobileView()) {
+    sb.classList.remove('open');
+    bd.classList.remove('open');
+    return;
+  }
+  sb.classList.toggle('open', !!open);
+  bd.classList.toggle('open', !!open);
+}
+
+// ═══════════════════════════════════════════════════
 //  API & UTILS
 // ═══════════════════════════════════════════════════
 async function api(method, path, body) {
@@ -788,7 +819,7 @@ async function doLogin() {
     initSocket();
     loadConversations();
     // Mobile: show sidebar after login
-    if (window.innerWidth <= 640) document.getElementById('sidebar').classList.add('open');
+    if (window.innerWidth <= 640) setSidebarOpen(true);
   } catch(e) {
     document.getElementById('l-err').textContent = '// ' + e.message;
   }
@@ -1044,7 +1075,7 @@ async function openChat(convId) {
   ac.style.display = 'flex';
 
   // Mobile: hide sidebar
-  document.getElementById('sidebar').classList.remove('open');
+  setSidebarOpen(false);
 
   renderConvList();
   updateChatHeader();
@@ -1074,7 +1105,9 @@ async function openChat(convId) {
     socket.emit('conv:join', { conv_id: convId });
   } catch(e) { msgEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--pink)">${esc(e.message)}</div>`; }
 
-  document.getElementById('msg-input').focus();
+  const mi = document.getElementById('msg-input');
+  mi.focus();
+  if (isMobileView()) setTimeout(() => scrollToBottom(true), 120);
 }
 
 // Handle pasting images directly
@@ -1151,7 +1184,7 @@ function closeChat() {
   cancelReply();
   document.getElementById('empty-chat').style.display = '';
   document.getElementById('active-chat').style.display = 'none';
-  document.getElementById('sidebar').classList.add('open');
+  setSidebarOpen(true);
   renderConvList();
 }
 
@@ -1825,7 +1858,7 @@ async function init() {
     initSocket();
     await loadConversations();
     // Mobile: show sidebar initially
-    if (window.innerWidth <= 640) document.getElementById('sidebar').classList.add('open');
+    if (window.innerWidth <= 640) setSidebarOpen(true);
     // Handle #dm:userId from forum profile link
     const hash = window.location.hash;
     if (hash.startsWith('#dm:')) {
@@ -1867,9 +1900,15 @@ document.addEventListener('visibilitychange', () => {
 // iOS keyboard handling — scroll to bottom when keyboard appears
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
-    if (activeConvId) setTimeout(() => scrollToBottom(true), 100);
+    updateAppHeight();
+    if (activeConvId) setTimeout(() => scrollToBottom(true), 120);
   });
+  window.visualViewport.addEventListener('scroll', updateAppHeight);
 }
+
+window.addEventListener('resize', updateAppHeight);
+window.addEventListener('orientationchange', () => setTimeout(updateAppHeight, 50));
+updateAppHeight();
 
 init();
 // ═══════════════════════════════════════════════════
