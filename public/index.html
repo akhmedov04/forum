@@ -456,7 +456,7 @@ html.light .toast{box-shadow:0 2px 12px rgba(0,0,0,.12);}
     <nav class="hnav-bar">
       <div class="hnav" onclick="goHome()">[ Boards ]</div>
       <div class="hnav" onclick="window.location='/messenger.html'">[ ✉ Messenger ]</div>
-      <div class="hnav" id="hn-events" onclick="nav('events')">[ 📅 Events ]</div>
+      <div class="hnav" id="hn-events" data-i18n="events_nav" onclick="nav('events')">[ 📅 Events ]</div>
       <div class="hnav" id="hn-cpw" onclick="nav('cpw')" style="display:none">[ Password ]</div>
       <div class="hnav adm" id="hn-admin" onclick="nav('admin')" style="display:none">[ ★ Admin ]</div>
       <div class="hnav" id="hn-logout" onclick="doLogout()" style="display:none">[ Logout ]</div>
@@ -603,7 +603,7 @@ html.light .toast{box-shadow:0 2px 12px rgba(0,0,0,.12);}
     <div id="view-events" class="view">
       <div class="back-btn" onclick="nav('board')">◄ BACK</div>
       <div class="toolbar">
-        <div><div class="board-title">📅 LAN EVENTS & MEETUPS</div></div>
+        <div><div class="board-title" id="ev-board-title">📅 LAN EVENTS & MEETUPS</div></div>
         <div class="toolbar-right">
           <button class="btn btn-cyan" id="btn-new-event" style="display:none" onclick="openNewEventModal()">[ + CREATE EVENT ]</button>
         </div>
@@ -660,21 +660,21 @@ html.light .toast{box-shadow:0 2px 12px rgba(0,0,0,.12);}
 <!-- Event Modal -->
 <div class="overlay" id="event-modal-overlay" onclick="if(event.target===this)closeEventModal()">
   <div class="modal" style="width:500px;max-width:94vw;">
-    <div class="modal-title">// NEW_EVENT</div>
-    <div class="frow"><label>Event Title</label><input type="text" id="ev-title" placeholder="Event name..."></div>
-    <div class="frow"><label>Description</label>
+    <div class="modal-title" id="ev-modal-t">// NEW_EVENT</div>
+    <div class="frow"><label id="ev-lbl-t">Event Title</label><input type="text" id="ev-title" placeholder="Event name..."></div>
+    <div class="frow"><label id="ev-lbl-d">Description</label>
       <div class="md-toolbar">
         <button onclick="insertMdTag('ev-desc','**','**')" title="Bold"><b>B</b></button>
         <button onclick="insertMdTag('ev-desc','*','*')" title="Italic"><i>I</i></button>
       </div>
       <textarea id="ev-desc" rows="4" placeholder="Event details... (Markdown supported)"></textarea>
     </div>
-    <div class="frow"><label>Event Date/Time</label><input type="datetime-local" id="ev-date" style="width:100%;height:38px;background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;outline:none;border-radius:var(--radius);"></div>
-    <div class="frow"><label>Location / Link</label><input type="text" id="ev-loc" placeholder="Physical location or URL..."></div>
+    <div class="frow"><label id="ev-lbl-dt">Event Date/Time</label><input type="datetime-local" id="ev-date" style="width:100%;height:38px;background:var(--bg);border:1px solid var(--border-bright);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;outline:none;border-radius:var(--radius);"></div>
+    <div class="frow"><label id="ev-lbl-l">Location / Link</label><input type="text" id="ev-loc" placeholder="Physical location or URL..."></div>
     <div class="ferr" id="ev-err"></div>
     <div class="mactions">
       <button class="btn btn-cyan" id="ev-btn" onclick="submitEvent()">[ CREATE EVENT ]</button>
-      <button class="btn btn-ghost" onclick="closeEventModal()">[ CANCEL ]</button>
+      <button class="btn btn-ghost" id="ev-cancel-btn" onclick="closeEventModal()">[ CANCEL ]</button>
     </div>
   </div>
 </div>
@@ -700,6 +700,7 @@ const LANGS = {
   en: {
     // Nav
     boards: '[ Boards ]',
+    events_nav: '[ 📅 Events ]',
     password: '[ Password ]',
     admin: '[ ★ Admin ]',
     logout: '[ Logout ]',
@@ -778,6 +779,8 @@ const LANGS = {
     adm_stats: '// SYSTEM_STATS',
     adm_users: '// USER_MANAGEMENT',
     adm_boards: '// BOARD_MANAGEMENT',
+    adm_events: '// EVENTS_MANAGEMENT',
+    stat_events: 'EVENTS',
     col_id: '#', col_user: 'Username', col_role: 'Role',
     col_threads: 'Threads', col_posts: 'Posts',
     col_joined: 'Joined', col_actions: 'Actions',
@@ -819,17 +822,42 @@ const LANGS = {
     e_name_req: '// NAME_REQUIRED',
     c_del_thread: 'DELETE this thread and ALL its posts? Cannot be undone.',
     c_del_post: 'DELETE this post?',
-    c_del_user: (u) => `DELETE user "${u}" and ALL their content?`,
+    c_del_user: (u) => `DELETE user "${u}"? Their posts will become anonymous.`,
     c_del_board: (n) => `DELETE board "${n}" and ALL its threads?`,
     // Empty / loading
     loading: 'LOADING…',
     no_threads_big: '404',
     err_big: 'ERR',
     search_prefix: 'SEARCH:',
+    // Events
+    ev_title: '📅 LAN EVENTS & MEETUPS',
+    ev_loading: 'LOADING EVENTS…',
+    ev_empty: 'No upcoming events',
+    ev_host: 'HOST',
+    ev_attending: 'ATTENDING',
+    ev_rsvp: "[ RSVP (I'M GOING) ]",
+    ev_create: '[ + CREATE EVENT ]',
+    ev_modal_title: '// NEW_EVENT',
+    ev_lbl_title: 'Event Title',
+    ev_lbl_desc: 'Description',
+    ev_lbl_date: 'Event Date/Time',
+    ev_lbl_loc: 'Location',
+    ev_ph_title: 'Event name...',
+    ev_ph_desc: 'Event details... (Markdown supported)',
+    ev_ph_loc: 'Location...',
+    ev_submit: '[ CREATE EVENT ]',
+    ev_creating: '[ CREATING... ]',
+    ev_created: '// EVENT_CREATED',
+    ev_rsvp_ok: '// RSVP_SUCCESSFUL',
+    ev_cancel: '[ CANCEL ]',
+    ev_delete: '[ DELETE ]',
+    ev_del_confirm: 'DELETE this event?',
+    ev_deleted: '// EVENT_DELETED',
   },
 
   ru: {
     boards: '[ Разделы ]',
+    events_nav: '[ 📅 Мероприятия ]',
     password: '[ Пароль ]',
     admin: '[ ★ Админ ]',
     logout: '[ Выйти ]',
@@ -900,6 +928,8 @@ const LANGS = {
     adm_stats: '// СТАТИСТИКА',
     adm_users: '// УПРАВЛЕНИЕ_ПОЛЬЗОВАТЕЛЯМИ',
     adm_boards: '// УПРАВЛЕНИЕ_РАЗДЕЛАМИ',
+    adm_events: '// УПРАВЛЕНИЕ_МЕРОПРИЯТИЯМИ',
+    stat_events: 'МЕРОПРИЯТИЯ',
     col_id: '#', col_user: 'Пользователь', col_role: 'Роль',
     col_threads: 'Темы', col_posts: 'Посты',
     col_joined: 'Дата', col_actions: 'Действия',
@@ -939,16 +969,41 @@ const LANGS = {
     e_name_req: '// ВВЕДИТЕ_НАЗВАНИЕ',
     c_del_thread: 'УДАЛИТЬ эту тему и ВСЕ её посты? Отменить невозможно.',
     c_del_post: 'УДАЛИТЬ этот пост?',
-    c_del_user: (u) => `УДАЛИТЬ пользователя "${u}" и весь его контент?`,
+    c_del_user: (u) => `УДАЛИТЬ пользователя "${u}"? Его посты станут анонимными.`,
     c_del_board: (n) => `УДАЛИТЬ раздел "${n}" и ВСЕ его темы?`,
     loading: 'ЗАГРУЗКА…',
     no_threads_big: '404',
     err_big: 'ОШИБКА',
     search_prefix: 'ПОИСК:',
+    // Events
+    ev_title: '📅 МЕРОПРИЯТИЯ И ВСТРЕЧИ',
+    ev_loading: 'ЗАГРУЗКА…',
+    ev_empty: 'Нет предстоящих мероприятий',
+    ev_host: 'ОРГАНИЗАТОР',
+    ev_attending: 'УЧАСТВУЮТ',
+    ev_rsvp: '[ УЧАСТВУЮ ]',
+    ev_create: '[ + СОЗДАТЬ ]',
+    ev_modal_title: '// НОВОЕ_МЕРОПРИЯТИЕ',
+    ev_lbl_title: 'Название',
+    ev_lbl_desc: 'Описание',
+    ev_lbl_date: 'Дата и время',
+    ev_lbl_loc: 'Место',
+    ev_ph_title: 'Название мероприятия...',
+    ev_ph_desc: 'Подробности... (Markdown поддерживается)',
+    ev_ph_loc: 'Место проведения...',
+    ev_submit: '[ СОЗДАТЬ ]',
+    ev_creating: '[ СОЗДАНИЕ... ]',
+    ev_created: '// СОЗДАНО',
+    ev_rsvp_ok: '// ВЫ_УЧАСТВУЕТЕ',
+    ev_cancel: '[ ОТМЕНА ]',
+    ev_delete: '[ УДАЛИТЬ ]',
+    ev_del_confirm: 'УДАЛИТЬ это мероприятие?',
+    ev_deleted: '// УДАЛЕНО',
   },
 
   uz: {
     boards: "[ Boʼlimlar ]",
+    events_nav: "[ 📅 Tadbirlar ]",
     password: "[ Parol ]",
     admin: "[ ★ Admin ]",
     logout: "[ Chiqish ]",
@@ -1019,6 +1074,8 @@ const LANGS = {
     adm_stats: "// TIZIM_STATISTIKASI",
     adm_users: "// FOYDALANUVCHILAR",
     adm_boards: "// BOʼLIMLAR_BOSHQARUVI",
+    adm_events: "// TADBIRLAR_BOSHQARUVI",
+    stat_events: "TADBIRLAR",
     col_id: "#", col_user: "Foydalanuvchi", col_role: "Rol",
     col_threads: "Mavzular", col_posts: "Postlar",
     col_joined: "Sana", col_actions: "Amallar",
@@ -1058,12 +1115,36 @@ const LANGS = {
     e_name_req: "// NOMI_KERAK",
     c_del_thread: "Bu mavzu va BARCHA postlarini OʼCHIRISH? Qaytarib boʼlmaydi.",
     c_del_post: "Bu postni OʼCHIRISH?",
-    c_del_user: (u) => `"${u}" foydalanuvchisi va uning barcha kontentini OʼCHIRISH?`,
+    c_del_user: (u) => `"${u}" foydalanuvchisini O'CHIRISH? Uning postlari anonim bo'lib qoladi.`,
     c_del_board: (n) => `"${n}" boʼlimi va BARCHA mavzularini OʼCHIRISH?`,
     loading: "YUKLANMOQDA\u2026",
     no_threads_big: "404",
     err_big: "XATO",
     search_prefix: "QIDIRUV:",
+    // Events
+    ev_title: "📅 TADBIRLAR VA UCHRASHUVLARˮ",
+    ev_loading: "YUKLANMOQDA…",
+    ev_empty: "Hozircha tadbirlar yo'q",
+    ev_host: "TASHKILOTCHI",
+    ev_attending: "QATNASHADI",
+    ev_rsvp: "[ QATNASHAMAN ]",
+    ev_create: "[ + YARATISH ]",
+    ev_modal_title: "// YANGI_TADBIR",
+    ev_lbl_title: "Nomi",
+    ev_lbl_desc: "Tavsif",
+    ev_lbl_date: "Sana va vaqt",
+    ev_lbl_loc: "Joy",
+    ev_ph_title: "Tadbir nomi...",
+    ev_ph_desc: "Tafsilotlar... (Markdown qo'llab-quvvatlanadi)",
+    ev_ph_loc: "O'tkazilish joyi...",
+    ev_submit: "[ YARATISH ]",
+    ev_creating: "[ YARATILMOQDA... ]",
+    ev_created: "// YARATILDI",
+    ev_rsvp_ok: "// QATNASHMOQDASIZ",
+    ev_cancel: "[ BEKOR ]",
+    ev_delete: "[ O'CHIRISH ]",
+    ev_del_confirm: "Bu tadbirni O'CHIRISH?",
+    ev_deleted: "// O'CHIRILDI",
   }
 };
 
@@ -1873,6 +1954,7 @@ async function loadAdmin() {
             <div class="scard"><div class="snum">${stats.users}</div><div class="slabel">${t('stat_users')}</div></div>
             <div class="scard"><div class="snum">${stats.threads}</div><div class="slabel">${t('stat_threads')}</div></div>
             <div class="scard"><div class="snum">${stats.posts}</div><div class="slabel">${t('stat_posts')}</div></div>
+            <div class="scard"><div class="snum" style="color:var(--cyan)">${stats.events||0}</div><div class="slabel">${t('stat_events')}</div></div>
             <div class="scard"><div class="snum" style="color:var(--pink);text-shadow:var(--glow-pink)">${stats.admins}</div><div class="slabel">${t('stat_admins')}</div></div>
             <div class="scard"><div class="snum" style="color:var(--yellow)">${stats.mods||0}</div><div class="slabel">${t('stat_mods')}</div></div>
             <div class="scard"><div class="snum" style="color:#ff4444">${stats.banned}</div><div class="slabel">${t('stat_banned')}</div></div>
@@ -1988,6 +2070,35 @@ async function loadAdmin() {
           </div>
           <div style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:6px;">
             Words are replaced with *** in all posts and threads.
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Events management — admin only
+    if (isAdmin) {
+      const evts = await api('GET', '/events');
+      html += `
+      <div class="asect">
+        <div class="asect-title">${t('adm_events')}</div>
+        <div class="asect-body">
+          ${evts.length === 0
+            ? `<div style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;">— ${t('ev_empty')} —</div>`
+            : `<table class="atable">
+                <thead><tr><th>${t('ev_lbl_title')}</th><th>${t('ev_lbl_date')}</th><th>${t('ev_lbl_loc')}</th><th>${t('ev_host')}</th><th>${t('ev_attending')}</th><th></th></tr></thead>
+                <tbody>${evts.map(ev => `
+                  <tr>
+                    <td style="color:var(--cyan)">${esc(ev.title)}</td>
+                    <td style="color:var(--text-dim)">${new Date(ev.event_date * 1000).toLocaleString()}</td>
+                    <td style="color:var(--text-dim)">${esc(ev.location)}</td>
+                    <td>${esc(ev.creator_name)}</td>
+                    <td style="color:var(--yellow)">${ev.going_count}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteEvent(${ev.id})">${t('ev_delete')}</button></td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>`}
+          <div style="margin-top:10px;">
+            <button class="btn btn-cyan" onclick="nav('events')">${t('ev_create')}</button>
           </div>
         </div>
       </div>`;
@@ -2555,12 +2666,17 @@ init();
 
 async function loadEvents() {
   const el = document.getElementById('events-list');
-  el.innerHTML = '<div class="empty"><span class="spinner"></span>LOADING EVENTS…</div>';
-  document.getElementById('btn-new-event').style.display = me ? 'inline-block' : 'none';
+  el.innerHTML = `<div class="empty"><span class="spinner"></span>${t('ev_loading')}</div>`;
+  // Title & create button
+  const titleEl = document.getElementById('ev-board-title');
+  if (titleEl) titleEl.textContent = t('ev_title');
+  const isMod = me && ['admin','moderator'].includes(me.role);
+  document.getElementById('btn-new-event').style.display = isMod ? 'inline-block' : 'none';
+  document.getElementById('btn-new-event').textContent = t('ev_create');
   try {
     const events = await api('GET', '/events');
     if (!events.length) {
-      el.innerHTML = '<div class="empty"><div class="ebig">📅</div><div>No upcoming events</div></div>';
+      el.innerHTML = `<div class="empty"><div class="ebig">📅</div><div>${t('ev_empty')}</div></div>`;
       return;
     }
     el.innerHTML = events.map(ev => `
@@ -2569,19 +2685,20 @@ async function loadEvents() {
           <div>
             <div class="ttitle" style="color:var(--cyan);font-size:16px">${esc(ev.title)}</div>
             <div class="tmeta" style="margin-top:4px;">
-              <span class="tpin-badge">HOST: ${esc(ev.creator_name)}</span>
+              <span class="tpin-badge">${t('ev_host')}: ${esc(ev.creator_name)}</span>
               <span>📅 ${new Date(ev.event_date * 1000).toLocaleString()}</span>
               <span>📍 ${esc(ev.location)}</span>
             </div>
           </div>
           <div style="text-align:right">
             <div class="rnum" style="color:var(--yellow)">${ev.going_count}</div>
-            <div class="rlabel">ATTENDING</div>
+            <div class="rlabel">${t('ev_attending')}</div>
           </div>
         </div>
         <div class="pbody md-rendered" style="margin-top:12px;font-size:13px">${renderMarkdown(ev.description)}</div>
-        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;">
-          <button class="btn btn-cyan btn-sm" onclick="rsvpEvent(${ev.id})">[ RSVP (I'M GOING) ]</button>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;">
+          <button class="btn btn-cyan btn-sm" onclick="rsvpEvent(${ev.id})">${t('ev_rsvp')}</button>
+          ${isMod ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent(${ev.id})">${t('ev_delete')}</button>` : ''}
         </div>
       </div>
     `).join('');
@@ -2597,6 +2714,17 @@ function openNewEventModal() {
   document.getElementById('ev-date').value = '';
   document.getElementById('ev-loc').value = '';
   document.getElementById('ev-err').textContent = '';
+  // Apply translations to modal
+  document.getElementById('ev-modal-t').textContent = t('ev_modal_title');
+  document.getElementById('ev-lbl-t').textContent = t('ev_lbl_title');
+  document.getElementById('ev-lbl-d').textContent = t('ev_lbl_desc');
+  document.getElementById('ev-lbl-dt').textContent = t('ev_lbl_date');
+  document.getElementById('ev-lbl-l').textContent = t('ev_lbl_loc');
+  document.getElementById('ev-title').placeholder = t('ev_ph_title');
+  document.getElementById('ev-desc').placeholder = t('ev_ph_desc');
+  document.getElementById('ev-loc').placeholder = t('ev_ph_loc');
+  document.getElementById('ev-btn').textContent = t('ev_submit');
+  document.getElementById('ev-cancel-btn').textContent = t('ev_cancel');
   document.getElementById('event-modal-overlay').classList.add('open');
 }
 
@@ -2614,17 +2742,17 @@ async function submitEvent() {
   errEl.textContent = '';
   if (!title || !desc || !dateStr || !loc) { errEl.textContent = t('e_all_fields'); return; }
   
-  btn.disabled = true; btn.textContent = '[ CREATING... ]';
+  btn.disabled = true; btn.textContent = t('ev_creating');
   try {
     const eventTime = new Date(dateStr).getTime() / 1000;
     await api('POST', '/events', { title, description: desc, event_date: eventTime, location: loc });
     closeEventModal();
-    toast('// EVENT_CREATED');
+    toast(t('ev_created'));
     loadEvents();
   } catch(e) {
     errEl.textContent = '// ' + e.message;
   } finally {
-    btn.disabled = false; btn.textContent = '[ CREATE EVENT ]';
+    btn.disabled = false; btn.textContent = t('ev_submit');
   }
 }
 
@@ -2632,7 +2760,18 @@ async function rsvpEvent(eventId) {
   if (!me) { openAuth(); return; }
   try {
     await api('POST', `/events/${eventId}/rsvp`, { status: 'going' });
-    toast('// RSVP_SUCCESSFUL');
+    toast(t('ev_rsvp_ok'));
+    loadEvents();
+  } catch(e) {
+    toast('// ' + e.message, true);
+  }
+}
+
+async function deleteEvent(eventId) {
+  if (!confirm(t('ev_del_confirm'))) return;
+  try {
+    await api('DELETE', `/events/${eventId}`);
+    toast(t('ev_deleted'));
     loadEvents();
   } catch(e) {
     toast('// ' + e.message, true);

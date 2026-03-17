@@ -692,6 +692,7 @@ let socket = null;
 let convs = [];
 let activeConvId = null;
 let allUsers = [];
+let contactUsers = [];
 let onlineUserIds = [];
 let groupSelectedIds = [];
 let typingUsers = {};
@@ -1463,21 +1464,40 @@ function openNewGroup() {
 
 async function loadAllUsersForGroup() {
   try {
-    allUsers = await api('GET', '/messenger/users/all');
+    contactUsers = await api('GET', '/messenger/users/contacts');
+    allUsers = contactUsers;
     renderGroupUsers();
   } catch(e) {}
 }
 
-function searchUsersForGroup() { renderGroupUsers(); }
+let searchTimeout = null;
+function searchUsersForGroup() {
+  clearTimeout(searchTimeout);
+  const q = document.getElementById('group-search').value.trim();
+  if (!q) {
+    allUsers = contactUsers;
+    renderGroupUsers();
+    return;
+  }
+  searchTimeout = setTimeout(async () => {
+    try {
+      const all = await api('GET', '/messenger/users/all');
+      allUsers = all.filter(u => u.username.toLowerCase().includes(q.toLowerCase()));
+      renderGroupUsers();
+    } catch(e) {}
+  }, 300);
+}
 
 function renderGroupUsers() {
   const q = document.getElementById('group-search').value.toLowerCase().trim();
   let filtered = allUsers;
-  if (q) filtered = allUsers.filter(u => u.username.toLowerCase().includes(q));
+  if (q && allUsers === contactUsers) {
+    filtered = allUsers.filter(u => u.username.toLowerCase().includes(q));
+  }
 
   document.getElementById('group-results').innerHTML = filtered.map(u => `
     <div class="user-pick${groupSelectedIds.includes(u.id) ? ' selected' : ''}" onclick="toggleGroupUser(${u.id},'${esc(u.username)}')">
-      <div class="conv-avatar" style="width:28px;height:28px;font-size:11px">${esc(u.username[0].toUpperCase())}</div>
+      <div class="conv-avatar" style="width:28px;height:28px;font-size:11px">${u.avatar_url ? `<img src="${esc(u.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : esc(u.username[0].toUpperCase())}</div>
       <span class="uname">${esc(u.username)}</span>
       <span class="check">✓</span>
     </div>`).join('');
@@ -1763,6 +1783,9 @@ async function startVoiceCall() {
   document.getElementById('call-accept-btn').style.display = 'none';
 
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw { name: 'NotSupported', message: 'Microphone requires HTTPS connection. Use localhost or enable HTTPS.' };
+    }
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     createPeerConnection();
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -1782,6 +1805,9 @@ async function acceptCall() {
   document.getElementById('call-accept-btn').style.display = 'none';
   document.getElementById('call-status').textContent = 'Connecting...';
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw { name: 'NotSupported', message: 'Microphone requires HTTPS connection. Use localhost or enable HTTPS.' };
+    }
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
     

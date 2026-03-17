@@ -193,6 +193,21 @@ router.get('/users/search', async (req, res) => {
 });
 
 // ─── Get all users (for group creation) ─────
+// Users you have chatted with (contacts)
+router.get('/users/contacts', async (req, res) => {
+  try {
+    const users = await db.all(`
+      SELECT DISTINCT u.id, u.username, u.avatar_url, u.role, u.last_seen
+      FROM users u
+      INNER JOIN conv_participants cp ON cp.user_id = u.id
+      INNER JOIN conv_participants my ON my.conv_id = cp.conv_id AND my.user_id = ?
+      WHERE u.id != ? AND u.role != 'banned'
+      ORDER BY u.username COLLATE NOCASE`, [req.session.user.id, req.session.user.id]);
+    res.json(users);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// All users (for search)
 router.get('/users/all', async (req, res) => {
   try {
     const users = await db.all(`

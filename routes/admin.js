@@ -56,12 +56,27 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.id === req.session.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
 
-    // Clean up dependent records to avoid foreign key constraint failures
-    await db.run('DELETE FROM messages WHERE user_id=?', [user.id]);
-    await db.run('DELETE FROM posts WHERE user_id=?', [user.id]);
-    await db.run('DELETE FROM threads WHERE user_id=?', [user.id]);
+    // Ensure [deleted] user exists for orphaned content
+    let anon = await db.get("SELECT id FROM users WHERE username='[deleted]'");
+    if (!anon) {
+      const hash = await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 12);
+      const r = await db.run("INSERT INTO users(username,password,role,bio) VALUES('[deleted]',?,'banned','Deleted user')", [hash]);
+      anon = { id: r.lastInsertRowid };
+    }
+
+    // Transfer content to [deleted] user
+    await db.run('UPDATE threads SET user_id=?, is_anonymous=1 WHERE user_id=?', [anon.id, user.id]);
+    await db.run('UPDATE posts SET user_id=?, is_anonymous=1 WHERE user_id=?', [anon.id, user.id]);
+    await db.run('UPDATE messages SET user_id=? WHERE user_id=?', [anon.id, user.id]);
+    await db.run('UPDATE events SET created_by=? WHERE created_by=?', [anon.id, user.id]);
+
+    // Delete user-specific data
+    await db.run('DELETE FROM bookmarks WHERE user_id=?', [user.id]);
+    await db.run('DELETE FROM rep_votes WHERE from_user=? OR to_user=?', [user.id, user.id]);
+    await db.run('DELETE FROM event_rsvps WHERE user_id=?', [user.id]);
+    await db.run('DELETE FROM conv_participants WHERE user_id=?', [user.id]);
     await db.run('UPDATE conversations SET created_by=NULL WHERE created_by=?', [user.id]);
-    
+
     await db.run('DELETE FROM users WHERE id=?',[user.id]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -82,6 +97,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
       users:   (await db.get('SELECT COUNT(*) as n FROM users')).n,
       threads: (await db.get('SELECT COUNT(*) as n FROM threads')).n,
       posts:   (await db.get('SELECT COUNT(*) as n FROM posts')).n,
+      events:  (await db.get('SELECT COUNT(*) as n FROM events')).n,
       banned:  (await db.get("SELECT COUNT(*) as n FROM users WHERE role='banned'")).n,
       admins:  (await db.get("SELECT COUNT(*) as n FROM users WHERE role='admin'")).n,
       mods:    (await db.get("SELECT COUNT(*) as n FROM users WHERE role='moderator'")).n,

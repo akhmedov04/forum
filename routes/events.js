@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('../db/init');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireMod } = require('../middleware/auth');
 
 router.use(requireAuth);
 
@@ -25,9 +25,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/events
-// Create a new event
-router.post('/', async (req, res) => {
+// POST /api/events — admin/moderator only
+router.post('/', requireMod, async (req, res) => {
   const { title, description, event_date, location } = req.body;
   if (!title || !event_date) return res.status(400).json({ error: 'Title and date are required' });
 
@@ -70,6 +69,18 @@ router.post('/:id/rsvp', async (req, res) => {
   } catch (err) {
     console.error('[EVENT RSVP ERROR]', err);
     res.status(500).json({ error: 'Failed to RSVP' });
+  }
+});
+
+// DELETE /api/events/:id — admin/moderator only
+router.delete('/:id', requireMod, async (req, res) => {
+  try {
+    await db.run('DELETE FROM event_rsvps WHERE event_id=?', [req.params.id]);
+    await db.run('DELETE FROM events WHERE id=?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[EVENT DELETE ERROR]', err);
+    res.status(500).json({ error: 'Failed to delete event' });
   }
 });
 

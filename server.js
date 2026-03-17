@@ -14,7 +14,7 @@ const { setupSocket }    = require('./socketHandler');
 const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, { cors: { origin: false } });
-const PORT   = process.env.PORT || 3000;
+const PORT   = process.env.PORT || 4000;
 const HOST   = process.env.HOST || '0.0.0.0';
 
 // Generate a random session secret if not provided (persists per process)
