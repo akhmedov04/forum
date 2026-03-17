@@ -18,19 +18,55 @@ router.get('/conversations', async (req, res) => {
       WHERE cp.hidden=0
       ORDER BY cp.pinned DESC, c.updated_at DESC`, [userId, userId]);
 
-    // For DMs, get the other participant's info
-    for (const c of convs) {
-      c.participants = await db.all(`
-        SELECT u.id, u.username, u.avatar_url, u.role, u.last_seen
-        FROM conv_participants cp JOIN users u ON u.id=cp.user_id
-        WHERE cp.conv_id=?`, [c.id]);
+    if (convs.length === 0) return res.json([]);
 
-      // Get last message
-      c.last_message = await db.get(`
-        SELECT m.*, u.username as author
-        FROM messages m JOIN users u ON u.id=m.user_id
-        WHERE m.conv_id=? AND m.deleted=0
-        ORDER BY m.created_at DESC LIMIT 1`, [c.id]);
+    const convIds = convs.map(c => c.id);
+    const placeholders = convIds.map(() => '?').join(',');
+
+    // Batch-load participants (avoid N+1)
+    const partRows = await db.all(
+      `
+      SELECT cp.conv_id, u.id, u.username, u.avatar_url, u.role, u.last_seen
+      FROM conv_participants cp
+      JOIN users u ON u.id = cp.user_id
+      WHERE cp.conv_id IN (${placeholders})
+      `,
+      convIds
+    );
+    const partsByConv = new Map();
+    for (const r of partRows) {
+      if (!partsByConv.has(r.conv_id)) partsByConv.set(r.conv_id, []);
+      partsByConv.get(r.conv_id).push({
+        id: r.id,
+        username: r.username,
+        avatar_url: r.avatar_url,
+        role: r.role,
+        last_seen: r.last_seen,
+      });
+    }
+
+    // Batch-load last message for each conversation (avoid N+1)
+    const lastRows = await db.all(
+      `
+      SELECT * FROM (
+        SELECT m.*, u.username as author,
+               ROW_NUMBER() OVER (PARTITION BY m.conv_id ORDER BY m.created_at DESC, m.id DESC) as rn
+        FROM messages m
+        JOIN users u ON u.id = m.user_id
+        WHERE m.deleted=0 AND m.conv_id IN (${placeholders})
+      ) WHERE rn=1
+      `,
+      convIds
+    );
+    const lastByConv = new Map();
+    for (const r of lastRows) {
+      delete r.rn;
+      lastByConv.set(r.conv_id, r);
+    }
+
+    for (const c of convs) {
+      c.participants = partsByConv.get(c.id) || [];
+      c.last_message = lastByConv.get(c.id) || null;
     }
     res.json(convs);
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -135,18 +171,20 @@ router.get('/conversations/:id/messages', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 50, 100);
 
     const messages = await db.all(`
-      SELECT m.*, u.username as author, u.avatar_url as author_avatar, u.role as author_role
-      FROM messages m JOIN users u ON u.id=m.user_id
+      SELECT
+        m.*,
+        u.username as author,
+        u.avatar_url as author_avatar,
+        u.role as author_role,
+        ru.username as reply_author,
+        r.body as reply_body,
+        r.image as reply_image
+      FROM messages m
+      JOIN users u ON u.id=m.user_id
+      LEFT JOIN messages r ON r.id = m.reply_to_id
+      LEFT JOIN users ru ON ru.id = r.user_id
       WHERE m.conv_id=? AND m.created_at < ?
       ORDER BY m.created_at DESC LIMIT ?`, [convId, before, limit]);
-
-    // Populate reply info
-    for (const msg of messages) {
-      if (msg.reply_to_id) {
-        const replyMsg = await db.get(`SELECT m.body, m.image, u.username as author FROM messages m JOIN users u ON u.id=m.user_id WHERE m.id=?`, [msg.reply_to_id]);
-        if (replyMsg) { msg.reply_author = replyMsg.author; msg.reply_body = replyMsg.body; msg.reply_image = replyMsg.image; }
-      }
-    }
 
     // Mark as read
     const now = Math.floor(Date.now() / 1000);

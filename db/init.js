@@ -184,6 +184,7 @@ async function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_conv_participants_user ON conv_participants(user_id);
     CREATE INDEX IF NOT EXISTS idx_conv_participants_conv ON conv_participants(conv_id);
     CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conv_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_messages_conv_deleted_created ON messages(conv_id, deleted, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
     CREATE INDEX IF NOT EXISTS idx_conversations_updated ON conversations(updated_at DESC);
   `);
