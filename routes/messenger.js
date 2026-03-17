@@ -101,6 +101,28 @@ router.delete('/conversations/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ─── Delete DM conversation for everyone (REST fallback) ─────
+router.post('/conversations/:id/delete-all', async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const convId = parseInt(req.params.id);
+    if (!convId) return res.status(400).json({ error: 'Invalid conversation' });
+
+    const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [convId, userId]);
+    if (!member) return res.status(403).json({ error: 'Not a member' });
+
+    const conv = await db.get('SELECT id, type FROM conversations WHERE id=?', [convId]);
+    if (!conv) return res.status(404).json({ error: 'Not found' });
+    if (conv.type !== 'dm') return res.status(400).json({ error: 'DM only' });
+
+    const participants = await db.all('SELECT user_id FROM conv_participants WHERE conv_id=?', [convId]);
+    if (participants.length !== 2) return res.status(400).json({ error: 'Invalid DM' });
+
+    await db.run('DELETE FROM conversations WHERE id=?', [convId]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─── Create DM conversation ─────
 router.post('/conversations/dm', async (req, res) => {
   try {

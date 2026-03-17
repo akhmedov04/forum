@@ -176,6 +176,55 @@ function setupSocket(io, sessionMiddleware) {
         [now, data.conv_id, userId]);
     });
 
+    // ─── Delete / hide conversation ─────
+    // scope: 'me' (hide only for current user) OR 'all' (DM only, delete for both)
+    socket.on('conv:delete', async (data, ack) => {
+      try {
+        if (socketRateLimit(userId, 'conv:delete', 10)) return ack?.({ error: 'Too fast' });
+        const convId = parseInt(data?.conv_id);
+        const scope = data?.scope === 'all' ? 'all' : 'me';
+        if (!convId) return ack?.({ error: 'Invalid conversation' });
+
+        const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [convId, userId]);
+        if (!member) return ack?.({ error: 'Not a member' });
+
+        if (scope === 'me') {
+          await db.run('UPDATE conv_participants SET hidden=1, pinned=0 WHERE conv_id=? AND user_id=?', [convId, userId]);
+          ack?.({ ok: true, scope: 'me' });
+          return;
+        }
+
+        // Delete for everyone: DM only
+        const conv = await db.get('SELECT id, type FROM conversations WHERE id=?', [convId]);
+        if (!conv) return ack?.({ error: 'Not found' });
+        if (conv.type !== 'dm') return ack?.({ error: 'DM only' });
+
+        const participants = await db.all('SELECT user_id FROM conv_participants WHERE conv_id=?', [convId]);
+        if (participants.length !== 2) return ack?.({ error: 'Invalid DM' });
+
+        const pids = participants.map(p => p.user_id);
+
+        // Deleting conversation cascades messages and participants (foreign keys ON)
+        await db.run('DELETE FROM conversations WHERE id=?', [convId]);
+
+        // Notify both sides + leave room
+        for (const pid of pids) {
+          const pSockets = onlineUsers.get(pid);
+          if (!pSockets) continue;
+          for (const sid of pSockets) {
+            const s = io.sockets.sockets.get(sid);
+            if (!s) continue;
+            s.leave(`conv:${convId}`);
+            s.emit('conv:deleted', { conv_id: convId, scope: 'all', by_user_id: userId });
+          }
+        }
+
+        ack?.({ ok: true, scope: 'all' });
+      } catch (e) {
+        ack?.({ error: e.message });
+      }
+    });
+
     // ─── Group: notify members of changes ─────
     socket.on('group:updated', async (data) => {
       const member = await db.get('SELECT * FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);

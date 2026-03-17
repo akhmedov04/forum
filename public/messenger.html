@@ -547,7 +547,8 @@ const LANGS = {
     gp_kicked: '// member removed', gp_role_set: '// role updated', gp_left: '// left group',
     gp_added: '// member added', fwd_sent: '// forwarded',
     joined: 'Joined:', last_seen: 'Seen:',
-    del_chat_confirm: 'Delete this chat from sidebar?'
+    del_chat_confirm: 'Delete this chat?',
+    del_chat_scope: 'Delete for everyone?\n\nOK = delete for both\nCancel = delete only for you'
   },
   ru: {
     login_user: 'Пользователь', login_pass: 'Пароль', login_btn: '[ ВОЙТИ ]',
@@ -583,7 +584,8 @@ const LANGS = {
     gp_kicked: '// участник удалён', gp_role_set: '// роль изменена', gp_left: '// вы покинули группу',
     gp_added: '// участник добавлен', fwd_sent: '// переслано',
     joined: 'Рег:', last_seen: 'Был(а):',
-    del_chat_confirm: 'Удалить этот чат из списка?'
+    del_chat_confirm: 'Удалить этот чат?',
+    del_chat_scope: 'Удалить у всех?\n\nOK = удалить у обоих\nCancel = удалить только у вас'
   },
   uz: {
     login_user: 'Foydalanuvchi', login_pass: 'Parol', login_btn: '[ KIRISH ]',
@@ -619,7 +621,8 @@ const LANGS = {
     gp_kicked: "// a'zo chiqarildi", gp_role_set: '// rol yangilandi', gp_left: '// guruhdan chiqdingiz',
     gp_added: "// a'zo qo'shildi", fwd_sent: '// uzatildi',
     joined: 'Reg:', last_seen: "Ko'rilgan:",
-    del_chat_confirm: "Chatni sidebar ro'yxatidan o'chirish?"
+    del_chat_confirm: "Chatni o'chirish?",
+    del_chat_scope: "Ikkala tomonda ham o'chirilsinmi?\n\nOK = ikkalasi uchun\nCancel = faqat siz uchun"
   }
 };
 
@@ -836,6 +839,13 @@ function initSocket() {
   socket.on('conv:new', ({ conv_id }) => {
     // Reload full conversation list to pick up the new one
     loadConversations();
+  });
+
+  socket.on('conv:deleted', ({ conv_id }) => {
+    // Conversation deleted for everyone (DM). Remove locally + close if open.
+    convs = convs.filter(c => c.id !== conv_id);
+    if (activeConvId === conv_id) closeChat();
+    renderConvList();
   });
 
   socket.on('msg:edited', ({ msg_id, body, updated_at }) => {
@@ -1329,9 +1339,28 @@ async function togglePinConv(convId) {
 
 async function deleteConv(convId) {
   hideCtxMenu();
+  const conv = convs.find(c => c.id === convId);
+  if (!conv) return;
   if (!confirm(t('del_chat_confirm'))) return;
+
+  const isDM = conv.type === 'dm';
+  const scope = isDM && confirm(t('del_chat_scope')) ? 'all' : 'me';
+
+  // Prefer socket for Telegram-like behavior (notify other side)
+  if (socket) {
+    socket.emit('conv:delete', { conv_id: convId, scope }, (res) => {
+      if (res?.error) { toast('// ' + res.error, true); return; }
+      convs = convs.filter(c => c.id !== convId);
+      if (activeConvId === convId) closeChat();
+      renderConvList();
+    });
+    return;
+  }
+
+  // REST fallback (no realtime for other side)
   try {
-    await api('DELETE', `/messenger/conversations/${convId}`);
+    if (scope === 'all') await api('POST', `/messenger/conversations/${convId}/delete-all`, {});
+    else await api('DELETE', `/messenger/conversations/${convId}`);
     convs = convs.filter(c => c.id !== convId);
     if (activeConvId === convId) closeChat();
     renderConvList();
