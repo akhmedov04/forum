@@ -1763,6 +1763,9 @@ async function startVoiceCall() {
   document.getElementById('call-accept-btn').style.display = 'none';
 
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw { name: 'NotSupported', message: 'Microphone requires HTTPS connection. Use localhost or enable HTTPS.' };
+    }
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     createPeerConnection();
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -1782,6 +1785,9 @@ async function acceptCall() {
   document.getElementById('call-accept-btn').style.display = 'none';
   document.getElementById('call-status').textContent = 'Connecting...';
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw { name: 'NotSupported', message: 'Microphone requires HTTPS connection. Use localhost or enable HTTPS.' };
+    }
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
     

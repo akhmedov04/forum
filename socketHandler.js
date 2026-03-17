@@ -151,13 +151,17 @@ function setupSocket(io, sessionMiddleware) {
     });
 
     // ─── Typing indicator ─────
-    socket.on('typing:start', (data) => {
+    socket.on('typing:start', async (data) => {
       if (socketRateLimit(userId, 'typing', 30)) return;
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('typing:start', {
         conv_id: data.conv_id, user_id: userId, username: socket.username
       });
     });
-    socket.on('typing:stop', (data) => {
+    socket.on('typing:stop', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('typing:stop', {
         conv_id: data.conv_id, user_id: userId
       });
@@ -165,19 +169,25 @@ function setupSocket(io, sessionMiddleware) {
 
     // ─── Mark as read ─────
     socket.on('conv:read', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       const now = Math.floor(Date.now()/1000);
       await db.run('UPDATE conv_participants SET last_read=? WHERE conv_id=? AND user_id=?',
         [now, data.conv_id, userId]);
     });
 
     // ─── Group: notify members of changes ─────
-    socket.on('group:updated', (data) => {
+    socket.on('group:updated', async (data) => {
+      const member = await db.get('SELECT * FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member || member.role !== 'admin') return;
       io.to(`conv:${data.conv_id}`).emit('group:updated', data);
     });
 
     // ─── Group: kick member (remove from room) ─────
     socket.on('group:kick', async (data) => {
       const { conv_id, user_id: kickedId } = data;
+      const member = await db.get('SELECT * FROM conv_participants WHERE conv_id=? AND user_id=?', [conv_id, userId]);
+      if (!member || member.role !== 'admin') return;
       const kickedSockets = onlineUsers.get(kickedId);
       if (kickedSockets) {
         for (const sid of kickedSockets) {
@@ -194,6 +204,8 @@ function setupSocket(io, sessionMiddleware) {
     // ─── Group: add member to room ─────
     socket.on('group:addmember', async (data) => {
       const { conv_id, user_id: addedId } = data;
+      const member = await db.get('SELECT * FROM conv_participants WHERE conv_id=? AND user_id=?', [conv_id, userId]);
+      if (!member || member.role !== 'admin') return;
       const addedSockets = onlineUsers.get(addedId);
       if (addedSockets) {
         for (const sid of addedSockets) {
@@ -254,21 +266,31 @@ function setupSocket(io, sessionMiddleware) {
     });
 
     // ─── Join new conversation room ─────
-    socket.on('conv:join', (data) => {
+    socket.on('conv:join', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return; // Not a member — deny room join
       socket.join(`conv:${data.conv_id}`);
     });
 
     // ─── WebRTC Signaling ─────
-    socket.on('webrtc-offer', (data) => {
+    socket.on('webrtc-offer', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('webrtc-offer', { ...data, from_user_id: userId, from_username: socket.username });
     });
-    socket.on('webrtc-answer', (data) => {
+    socket.on('webrtc-answer', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('webrtc-answer', { ...data, from_user_id: userId });
     });
-    socket.on('webrtc-candidate', (data) => {
+    socket.on('webrtc-candidate', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('webrtc-candidate', { ...data, from_user_id: userId });
     });
-    socket.on('webrtc-end', (data) => {
+    socket.on('webrtc-end', async (data) => {
+      const member = await db.get('SELECT id FROM conv_participants WHERE conv_id=? AND user_id=?', [data.conv_id, userId]);
+      if (!member) return;
       socket.to(`conv:${data.conv_id}`).emit('webrtc-end', { ...data, from_user_id: userId });
     });
 
